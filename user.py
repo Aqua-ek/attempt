@@ -71,6 +71,13 @@ class Questions(db.Model):
     sender = db.relationship('Users', backref='questions')
     group = db.relationship('Groups', backref='questions')
 
+    @property
+    def displayed_question(self):
+        if self.isdeleted == True:
+            return "[deleted]"
+        else:
+            return self.qstcontent
+
 
 class Answers(db.Model):
     __tablename__ = 'answers'

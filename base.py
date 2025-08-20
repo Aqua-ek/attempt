@@ -12,7 +12,7 @@ from ext import login_manager, socketio
 from flask_login import login_user, login_required, current_user, logout_user
 
 app = Flask(__name__)
-
+# csrf.init_app(app)
 migrate = Migrate(app, db)
 
 
@@ -606,11 +606,11 @@ def upvoteanswer(questid, ansid):
                          ).filter_by(answid=ansid).scalar()
         or 0
     )
-    time_diff = datetime.now(timezone.utc) - qst.qsttime
+    time_diff = datetime.now() - qst.qsttime
     now = datetime.now(timezone.utc)
 
     if (
-        net_count >= 5
+        net_count >= 2
         and time_diff <= timedelta(hours=24)
         and marked == False
         and (
@@ -692,14 +692,23 @@ def add_tags_page(groupid):
 @app.route("/delete/<type>/<int:id>", methods=['POST'])
 def delete(type, id):
     target = None
+    qtid = None
     if type == 'qst':
         prev = db.session.query(Questions).get(id)
+        prev.isdeleted = True
+        prev.deletedwhen = datetime.now(timezone.utc)
+        qtid = prev.qstid
     elif type == 'ans':
-        prev = db.session.query(target).get(id)
-        prev = "[deleted]"
+        prev = db.session.query(Answers).get(id)
+        prev.isdeleted = True
+        prev.deletedwhen = datetime.now(timezone.utc)
+        qtid = prev.qstid
+
     else:
         flash("Page Does Not Exist")
         return redirect(url_for('home'))
+    db.session.commit()
+    return redirect(url_for('question_answers', qstid=qtid))
 
 
 @app.route("/add_tag/<int:groupid>/<int:tagid>", methods=["POST"])
@@ -727,8 +736,8 @@ def addtag(groupid, tagid):
 
 
 # Handle new messages
-# if __name__ == "__main__":
-#     with app.app_context():
+if __name__ == "__main__":
+    with app.app_context():
 
-#         db.create_all()
-#     socketio.run(app, debug=True)
+        db.create_all()
+    socketio.run(app, debug=True)
