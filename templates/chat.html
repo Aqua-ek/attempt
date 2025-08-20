@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clack | {{ group.name }} Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        overflow: hidden;
+        font-family: "Inter", sans-serif;
+      }
+
+      #chat-box {
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: #4f46e5 #1f2937;
+      }
+
+      #chat-box::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #chat-box::-webkit-scrollbar-track {
+        background: #1f2937;
+      }
+
+      #chat-box::-webkit-scrollbar-thumb {
+        background-color: #4f46e5;
+        border-radius: 4px;
+      }
+
+      .message-bubble {
+        max-width: 75%;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-bubble:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+      }
+
+      .typing-indicator {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #94a3b8;
+        border-radius: 50%;
+        display: inline-block;
+        margin: 0 2px;
+        animation: typingAnimation 1.4s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typingAnimation {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .avatar {
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        color: white;
+        font-weight: 600;
+      }
+
+      .active-dot {
+        width: 10px;
+        height: 10px;
+        background-color: #10b981;
+        border-radius: 50%;
+        border: 2px solid #1e293b;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+      }
+
+      .message-time {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        font-size: 0.7rem;
+      }
+
+      .message-bubble:hover .message-time {
+        opacity: 1;
+      }
+
+      .profile-link:hover {
+        text-decoration: underline;
+      }
+
+      /* Sidebar styles */
+      #groups-sidebar {
+        width: 280px;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        overflow-y: auto;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 40;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        #groups-sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+        #groups-sidebar.open {
+          transform: translateX(0);
+        }
+      }
+
+      #sidebar-overlay {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 30;
+      }
+
+      #sidebar-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .group-item {
+        transition: all 0.2s ease;
+        border-radius: 0.5rem;
+        margin: 0.25rem 0.5rem;
+      }
+
+      .group-item:hover {
+        background-color: rgba(30, 41, 59, 0.7);
+      }
+
+      .group-item.active {
+        background-color: rgba(51, 65, 85, 0.7);
+        border-left: 3px solid #818cf8;
+      }
+
+      /* Adjust chat container margin based on sidebar */
+      #chat-container {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+      }
+
+      @media (max-width: 768px) {
+        #chat-container {
+          margin-left: 0;
+          width: 100%;
+        }
+      }
+
+      /* Group info sidebar */
+      #group-info-sidebar {
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Input styling */
+      #msg-input {
+        transition: all 0.2s ease;
+      }
+
+      #msg-input:focus {
+        box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.5);
+      }
+
+      /* Message bubbles */
+      .user-message {
+        background: linear-gradient(135deg, #6366f1, #818cf8);
+        color: white;
+        border-radius: 1rem 1rem 0.25rem 1rem;
+      }
+
+      .other-message {
+        background: rgba(30, 41, 59, 0.8);
+        color: #e2e8f0;
+        border-radius: 1rem 1rem 1rem 0.25rem;
+      }
+
+      /* Empty state */
+      .empty-state {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 1rem;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+      }
+
+      /* Header styling */
+      .chat-header {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Smooth transitions */
+      .transition-all {
+        transition: all 0.2s ease;
+      }
+
+      /* Hover effects */
+      .hover-scale:hover {
+        transform: scale(1.05);
+      }
+
+      /* Custom shadows */
+      .shadow-chat {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+    </style>
+  </head>
+  <body class="text-gray-200 h-screen flex">
+    <!-- Sidebar Overlay (mobile only) -->
+    <div id="sidebar-overlay" class="md:hidden"></div>
+
+    <!-- Groups Sidebar -->
+    <div id="groups-sidebar" class="h-full flex flex-col">
+      <!-- Sidebar Header -->
+      <div class="p-4 border-b border-gray-700/50">
+        <div class="flex justify-between items-center mb-4">
+          <h1 class="text-xl font-bold text-indigo-300 flex items-center gap-2">
+            <i class="fas fa-comments"></i>
+            <span>Clack Groups</span>
+          </h1>
+          <button
+            id="close-sidebar"
+            class="text-gray-400 hover:text-indigo-300 transition-all md:hidden"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Search groups..."
+            class="w-full bg-gray-700/50 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+          />
+          <i
+            class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"
+          ></i>
+        </div>
+      </div>
+
+      <!-- Groups List -->
+      <div class="flex-1 overflow-y-auto p-2">
+        {% for grp in current_user_groups %}
+        <a
+          href="{{ url_for('chat', group_name=grp.name) }}"
+          class="group-item flex items-center p-3 {{ 'active' if grp.name == group.name }}"
+        >
+          <div class="relative mr-3">
+            <div
+              class="avatar w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium shadow-md"
+            >
+              {{ grp.name[0] }}
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-medium truncate">{{ grp.name }}</h3>
+            <p class="text-xs text-gray-400 truncate">
+              {{ grp.members|length }} members
+            </p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- User Profile -->
+      <div class="p-3 border-t border-gray-700/50 flex items-center">
+        <div class="relative mr-3">
+          <div
+            class="avatar w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shadow-md"
+          >
+            {{ current_user.name[0] }}
+          </div>
+          <span class="active-dot"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium truncate">{{ current_user.name }}</p>
+          <p class="text-xs text-gray-400 truncate">Online</p>
+        </div>
+        <button class="text-gray-400 hover:text-indigo-300 transition-all">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div id="chat-container" class="flex flex-col h-full">
+      <!-- Header -->
+      <header class="chat-header p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button
+            id="sidebar-toggle"
+            class="text-gray-400 hover:text-indigo-300 transition-all md:hidden"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <div
+                class="avatar w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shadow-md"
+              >
+                {{ group.name[0] }}
+              </div>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-indigo-400">
+                {{ group.name }}
+              </h1>
+              <p class="text-gray-400 text-xs flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                {{ group.members|length }} members online
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            class="text-gray-400 hover:text-indigo-300 transition-all hover-scale"
+            id="group-info-toggle"
+          >
+            <i class="fas fa-info-circle text-lg"></i>
+          </button>
+          <div
+            id="typing-indicator"
+            class="typing-indicator text-sm text-gray-400 flex items-center"
+          >
+            <span id="typing-text"></span>
+            <div class="ml-1">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Chat Messages -->
+      <main
+        id="chat-box"
+        class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-900/30 to-gray-900/10"
+      >
+        {% if history|length == 0 %}
+        <div
+          class="empty-state flex flex-col items-center justify-center h-full text-center text-gray-500 p-8 m-4"
+        >
+          <div
+            class="avatar w-16 h-16 rounded-full flex items-center justify-center text-2xl font-medium mb-4 shadow-md"
+          >
+            {{ group.name[0] }}
+          </div>
+          <h3 class="text-lg font-medium text-gray-300">
+            Welcome to #{{ group.name }}
+          </h3>
+          <p class="text-sm max-w-xs mt-2 text-gray-400">
+            This is the beginning of your conversation. Say hello to your group
+            members!
+          </p>
+        </div>
+        {% endif %} {% for msg in history %}
+        <div
+          class="flex {{ 'justify-end' if msg.sender.name == current_user.name else 'justify-start' }}"
+        >
+          <div
+            class="message-bubble px-4 py-3 shadow-chat text-sm relative transition-all
+            {{ 'user-message' if msg.sender.name == current_user.name else 'other-message' }}"
+          >
+            {% if msg.sender.name != current_user.name %}
+            <a
+              href="{{ url_for('other_status', user_name=msg.sender.name) }}"
+              class="profile-link font-semibold text-xs text-indigo-300 mb-1 flex items-center gap-2"
+            >
+              <div
+                class="avatar w-5 h-5 rounded-full flex items-center justify-center text-xs"
+              >
+                {{ msg.sender.name[0] }}
+              </div>
+              {{ msg.sender.name }}
+            </a>
+            {% endif %}
+            <div class="break-words">{{ msg.content }}</div>
+            <div
+              class="message-time text-xs mt-1 {{ 'text-indigo-100' if msg.sender.name == current_user.name else 'text-gray-400' }} text-right flex items-center justify-end gap-1"
+            >
+              {{ msg.msgtime.strftime('%H:%M') }} {% if msg.sender.name ==
+              current_user.name %}
+              <i class="fas fa-check text-xs"></i>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </main>
+
+      <!-- Chat Form -->
+      <form
+        id="chat-form"
+        class="bg-gray-800/80 backdrop-blur-sm p-4 border-t border-gray-700/50 flex items-center gap-3"
+      >
+        <button
+          type="button"
+          class="text-gray-400 hover:text-indigo-300 transition-all p-2 rounded-full hover:bg-gray-700/50 hover-scale"
+        >
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <input
+          type="text"
+          id="msg-input"
+          class="flex-1 px-4 py-3 rounded-xl bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          placeholder="Message #{{ group.name }}"
+          autocomplete="off"
+          required
+        />
+        <button
+          type="submit"
+          class="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-xl transition-all hover-scale flex items-center justify-center"
+        >
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Group Info Sidebar -->
+    <div
+      id="group-info-sidebar"
+      class="fixed right-0 top-0 bottom-0 w-80 z-30 p-4 overflow-y-auto hidden shadow-lg"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-indigo-300 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i>
+          <span>Group Info</span>
+        </h2>
+        <button
+          id="close-group-info"
+          class="text-gray-400 hover:text-indigo-300 transition-all hover-scale"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center mb-6">
+        <div
+          class="avatar w-20 h-20 rounded-full flex items-center justify-center text-3xl font-medium mb-3 shadow-md"
+        >
+          {{ group.name[0] }}
+        </div>
+        <h3 class="text-lg font-bold">{{ group.name }}</h3>
+        <p class="text-sm text-gray-400 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          {{ group.members|length }} members online
+        </p>
+      </div>
+
+      <div class="mb-6 bg-gray-700/30 rounded-lg p-4">
+        <h3
+          class="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2"
+        >
+          <i class="fas fa-align-left"></i>
+          <span>DESCRIPTION</span>
+        </h3>
+        <p class="text-sm text-gray-300">{{ group.groupdesc }}</p>
+      </div>
+
+      <div class="mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-medium text-gray-400 flex items-center gap-2">
+            <i class="fas fa-users"></i>
+            <span>MEMBERS</span>
+          </h3>
+          <span class="text-xs bg-gray-700 px-2 py-1 rounded-full"
+            >{{ group.members|length }}</span
+          >
+        </div>
+        <div class="space-y-2">
+          {% for member in group.members %}
+          <a
+            href="{{ url_for('other_status', user_name=member.name) }}"
+            class="block"
+          >
+            <div
+              class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-700/50 transition-all relative"
+            >
+              <div class="relative">
+                <div
+                  class="avatar w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm"
+                >
+                  {{ member.name[0] }}
+                </div>
+                <span class="active-dot"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">{{ member.name }}</p>
+                <p class="text-xs text-gray-400 truncate">Active now</p>
+              </div>
+              {% if member.name == current_user.name %}
+              <span class="text-xs text-gray-400">You</span>
+              {% endif %}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Socket.io logic remains exactly the same as in your original code
+      const socket = io();
+      const room = "{{ group.name }}";
+      const currentUser = "{{ current_user.name }}";
+      let typingTimeout;
+
+      const chatBox = document.getElementById("chat-box");
+      const input = document.getElementById("msg-input");
+      const typingIndicator = document.getElementById("typing-indicator");
+      const typingText = document.getElementById("typing-text");
+
+      // Sidebar elements
+      const sidebar = document.getElementById("groups-sidebar");
+      const sidebarToggle = document.getElementById("sidebar-toggle");
+      const closeSidebar = document.getElementById("close-sidebar");
+      const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+      // Group info sidebar elements
+      const groupInfoSidebar = document.getElementById("group-info-sidebar");
+      const groupInfoToggle = document.getElementById("group-info-toggle");
+      const closeGroupInfo = document.getElementById("close-group-info");
+
+      // Sidebar toggle functionality (mobile only)
+      sidebarToggle.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        sidebarOverlay.classList.add("open");
+      });
+
+      closeSidebar.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("open");
+      });
+
+      sidebarOverlay.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("open");
+      });
+
+      // Group info sidebar toggle
+      groupInfoToggle.addEventListener("click", () => {
+        groupInfoSidebar.classList.toggle("hidden");
+      });
+
+      closeGroupInfo.addEventListener("click", () => {
+        groupInfoSidebar.classList.add("hidden");
+      });
+
+      // Join room
+      socket.emit("join", { room, username: currentUser });
+
+      // Handle incoming messages
+      socket.on("receive_message", (data) => {
+        const isMine = data.username === currentUser;
+
+        // Remove empty state if it exists
+        const emptyState = document.querySelector(".empty-state");
+        if (emptyState) emptyState.remove();
+
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `flex ${isMine ? "justify-end" : "justify-start"}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = `message-bubble px-4 py-3 shadow-chat text-sm relative transition-all ${
+          isMine ? "user-message" : "other-message"
+        }`;
+
+        bubble.innerHTML = `
+          ${
+            !isMine
+              ? `<a href="${data.profileUrl}" class="profile-link font-semibold text-xs text-indigo-300 mb-1 flex items-center gap-2">
+                  <div class="avatar w-5 h-5 rounded-full flex items-center justify-center text-xs">
+                    ${data.username[0]}
+                  </div>
+                  ${data.username}
+                </a>`
+              : ""
+          }
+          <div class="break-words">${data.message}</div>
+          <div class="message-time text-xs mt-1 ${
+            isMine ? "text-indigo-100" : "text-gray-400"
+          } text-right flex items-center justify-end gap-1">
+            ${data.time}
+            ${isMine ? '<i class="fas fa-check text-xs"></i>' : ""}
+          </div>
+        `;
+
+        msgDiv.appendChild(bubble);
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      // Typing indicators
+      socket.on("handle_typing", (data) => {
+        if (data.username !== currentUser) {
+          typingText.textContent = `${data.username} is typing`;
+          typingIndicator.style.display = "flex";
+          setTimeout(() => {
+            typingIndicator.style.opacity = "1";
+          }, 10);
+
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => {
+            typingIndicator.style.opacity = "0";
+            setTimeout(() => {
+              typingIndicator.style.display = "none";
+            }, 300);
+          }, 2000);
+        }
+      });
+
+      // Send message
+      document.getElementById("chat-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (message) {
+          const now = new Date();
+          const timeString =
+            now.getHours().toString().padStart(2, "0") +
+            ":" +
+            now.getMinutes().toString().padStart(2, "0");
+
+          socket.emit("send_message", {
+            group: room,
+            message,
+            username: currentUser,
+            time: timeString,
+            profileUrl: `/other_status/${currentUser}`,
+          });
+          input.value = "";
+        }
+      });
+
+      // Typing detection
+      input.addEventListener("input", () => {
+        socket.emit("typing", { room, username: currentUser });
+      });
+
+      // Auto-scroll to bottom on load
+      window.addEventListener("load", () => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      // Leave room on unload
+      window.addEventListener("beforeunload", () => {
+        socket.emit("leave", { room, username: currentUser });
+      });
+    </script>
+  </body>
+</html>

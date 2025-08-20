@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-black text-yellow-200 min-h-screen flex font-sans">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-zinc-900 p-6 flex flex-col justify-between">
+      <div>
+        <h2 class="text-2xl font-bold mb-8">Coolest User</h2>
+        <nav class="space-y-4 text-yellow-300">
+          <a href="#" class="flex items-center gap-3 hover:text-yellow-100">
+            <span>🏠</span> <span>Overview</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 hover:text-yellow-100">
+            <span>📊</span> <span>Analytics</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 hover:text-yellow-100">
+            <span>📩</span> <span>Inbox</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 hover:text-yellow-100">
+            <span>⚙️</span> <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+      <p class="text-xs text-yellow-500">&copy; 2025 Dashboard Inc.</p>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-zinc-950 p-10 space-y-8 overflow-y-auto">
+      <h1 class="text-3xl font-semibold text-yellow-100">Dashboard Overview</h1>
+
+      <!-- Stats cards -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-zinc-800 p-6 rounded-xl shadow-md">
+          <p class="text-lg">New Users</p>
+          <h2 class="text-2xl font-bold mt-2">150,040</h2>
+          <p class="text-green-400 mt-1">+40%</p>
+        </div>
+        <div class="bg-zinc-800 p-6 rounded-xl shadow-md">
+          <p class="text-lg">Messages</p>
+          <h2 class="text-2xl font-bold mt-2">300</h2>
+          <p class="text-green-400 mt-1">+30%</p>
+        </div>
+        <div class="bg-zinc-800 p-6 rounded-xl shadow-md">
+          <p class="text-lg">Sales</p>
+          <h2 class="text-2xl font-bold mt-2">$2,340</h2>
+          <p class="text-green-400 mt-1">+25%</p>
+        </div>
+        <div class="bg-zinc-800 p-6 rounded-xl shadow-md">
+          <p class="text-lg">Conversion</p>
+          <h2 class="text-2xl font-bold mt-2">42%</h2>
+          <p class="text-green-400 mt-1">+12%</p>
+        </div>
+      </section>
+
+      <!-- Extra content -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          class="bg-gradient-to-br from-yellow-600 to-yellow-400 text-black p-6 rounded-xl"
+        >
+          <h3 class="font-bold text-xl">New</h3>
+          <p class="mt-2">
+            Realtime Templates now available. Submit your idea!
+          </p>
+          <button
+            class="mt-4 bg-black text-yellow-400 px-4 py-2 rounded hover:bg-yellow-900 transition"
+          >
+            Submit
+          </button>
+        </div>
+        <div class="bg-zinc-800 p-6 rounded-xl">
+          <h3 class="font-bold text-xl text-yellow-100">Recent Tickets</h3>
+          <ul class="mt-2 list-disc list-inside text-yellow-300">
+            <li>Fix UI layout</li>
+            <li>Update analytics chart</li>
+            <li>Add dark mode switch</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

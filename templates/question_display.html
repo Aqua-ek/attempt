@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ group.name }} – Questions | Clack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-extra-light: #e0e7ff;
+        --dark-1: #0f172a;
+        --dark-2: #1e293b;
+        --dark-3: #334155;
+        --light-1: #f8fafc;
+        --light-2: #e2e8f0;
+        --light-3: #94a3b8;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--dark-1), var(--dark-2));
+        font-family: "Inter", sans-serif;
+        color: var(--light-2);
+        min-height: 100vh;
+      }
+
+      /* Scrollbar Styles */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.5);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+      }
+
+      /* Card Styles */
+      .question-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(55, 65, 81, 0.3);
+        backdrop-filter: blur(10px);
+      }
+      .question-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+      }
+
+      /* Avatar Styles */
+      .group-avatar {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Text Styles */
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Button Styles */
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        transition: all 0.3s ease;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+      }
+      .btn-secondary {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+      }
+      .btn-secondary:hover {
+        background: rgba(30, 41, 59, 1);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+
+      /* Floating Action Button */
+      .floating-action-btn {
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+      }
+      .floating-action-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3);
+      }
+
+      /* Voting Styles */
+      .vote-btn {
+        transition: all 0.2s ease;
+      }
+      .vote-btn:hover {
+        transform: scale(1.1);
+      }
+      .upvote.active {
+        color: #10b981;
+      }
+      .downvote.active {
+        color: #ef4444;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        background: rgba(15, 23, 42, 0.98);
+        border-right: 1px solid rgba(71, 85, 105, 0.3);
+      }
+      .sidebar-mobile {
+        transform: translateX(-100%);
+      }
+      .sidebar-mobile.open {
+        transform: translateX(0);
+      }
+      .backdrop {
+        display: none;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+      }
+      .backdrop.open {
+        display: block;
+      }
+      .group-item {
+        transition: all 0.2s ease;
+      }
+      .group-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+      }
+      .active-group {
+        background: rgba(99, 102, 241, 0.2);
+        border-left: 3px solid var(--primary);
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+        }
+      }
+
+      .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Badge Styles */
+      .badge {
+        transition: all 0.2s ease;
+      }
+      .badge:hover {
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+  <body class="text-gray-200">
+    <!-- Mobile Menu Button -->
+    <div class="md:hidden fixed top-4 left-4 z-40">
+      <button
+        id="menuButton"
+        class="text-gray-300 hover:text-white focus:outline-none bg-gray-800/80 p-2 rounded-full transition"
+      >
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Backdrop -->
+    <div id="backdrop" class="backdrop fixed inset-0 z-30"></div>
+
+    <div class="flex max-w-7xl mx-auto px-4 py-6 gap-6">
+      <!-- Mobile Sidebar -->
+      <div
+        id="mobileSidebar"
+        class="sidebar sidebar-mobile fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto md:hidden pt-6 px-3 border-r border-gray-800 transition-transform duration-300 ease-in-out"
+      >
+        <div class="flex justify-between items-center mb-6 px-3">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <i class="fas fa-users mr-2 text-indigo-400"></i>
+            Your Groups
+          </h2>
+          <button
+            id="closeMenu"
+            class="text-gray-400 hover:text-white p-1 transition"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        <div class="space-y-1 mb-6">
+          <div class="relative px-3">
+            <input
+              type="text"
+              placeholder="Search groups..."
+              class="w-full bg-gray-800 text-gray-200 px-4 py-2 pl-10 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+            />
+            <i
+              class="fas fa-search absolute left-5 top-2.5 text-gray-400 text-sm"
+            ></i>
+          </div>
+        </div>
+        <div class="space-y-1 overflow-y-auto max-h-[70vh]">
+          {% for g in user_groups %}
+          <a
+            href="{{ url_for('group_questions', group_name=g.name) }}"
+            class="group-item flex items-center px-3 py-3 rounded-md text-sm font-medium {{ 'active-group text-white' if g.name == group.name else 'text-gray-300 hover:text-white' }}"
+          >
+            <div
+              class="group-avatar w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3"
+            >
+              {{ g.name[0].upper() }}{{ g.name[1].upper() if g.name|length > 1
+              else '' }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="truncate font-medium">{{ g.name }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ g.groupdesc }}</p>
+            </div>
+            {% if g.unread_count %}
+            <span
+              class="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full"
+            >
+              {{ g.unread_count }}
+            </span>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+        <div
+          class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800 bg-gray-900/50"
+        >
+          <a
+            href="{{url_for('suggest')}}"
+            class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium transition"
+          >
+            <i class="fas fa-plus-circle mr-2"></i>
+            Create New Group
+          </a>
+        </div>
+      </div>
+
+      <!-- Desktop Sidebar -->
+      <div class="w-72 flex-shrink-0 hidden md:block">
+        <div class="sticky top-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-white flex items-center">
+              <i class="fas fa-users mr-2 text-indigo-400"></i>
+              Your Groups
+            </h3>
+            <button
+              class="text-indigo-400 hover:text-indigo-300 p-1 transition"
+            >
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+          <div class="relative mb-4">
+            <input
+              type="text"
+              placeholder="Search groups..."
+              class="w-full bg-gray-800 text-gray-200 px-4 py-2 pl-10 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+            />
+            <i
+              class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"
+            ></i>
+          </div>
+          <div class="space-y-1 overflow-y-auto max-h-[70vh]">
+            {% for g in user_groups %}
+            <a
+              href="{{ url_for('group_questions', group_name=g.name) }}"
+              class="group-item flex items-center px-3 py-3 rounded-md text-sm font-medium {{ 'active-group text-white' if g.name == group.name else 'text-gray-300 hover:text-white' }}"
+            >
+              <div
+                class="group-avatar w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3"
+              >
+                {{ g.name[0].upper() }}{{ g.name[1].upper() if g.name|length > 1
+                else '' }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="truncate font-medium">{{ g.name }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ g.groupdesc }}</p>
+              </div>
+              {% if g.unread_count %}
+              <span
+                class="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full"
+              >
+                {{ g.unread_count }}
+              </span>
+              {% endif %}
+            </a>
+            {% endfor %}
+          </div>
+          <div class="mt-4 pt-4 border-t border-gray-800">
+            <a
+              href="{{url_for('suggest')}}"
+              class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium px-3 py-2 transition"
+            >
+              <i class="fas fa-plus-circle mr-2"></i>
+              Create New Group
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        <!-- Group Header -->
+        <div
+          class="mb-8 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-6 rounded-xl border border-gray-800/50 animate-fade-in-up"
+        >
+          <div
+            class="flex flex-col md:flex-row md:items-center justify-between"
+          >
+            <div class="mb-4 md:mb-0">
+              <div class="flex items-center">
+                <div
+                  class="group-avatar w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl mr-4"
+                >
+                  {{ group.name[0].upper() }}{{ group.name[1].upper() if
+                  group.name|length > 1 else '' }}
+                </div>
+                <div>
+                  <h1 class="text-2xl font-bold text-white">
+                    {{ group.name }}
+                  </h1>
+                  <p class="text-gray-300">{{ group.groupdesc }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-4">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-white">
+                  {{ questions_with_votes|length }}
+                </div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider">
+                  Questions
+                </div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-white">
+                  {{ group.members|length }}
+                </div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider">
+                  Members
+                </div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-white">
+                  {{ group.messages|length if group.messages else 0 }}
+                </div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider">
+                  Messages
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div
+          class="flex flex-col md:flex-row items-center gap-3 mb-8 animate-fade-in-up"
+          style="animation-delay: 0.1s"
+        >
+          <div class="relative w-full">
+            <input
+              type="text"
+              placeholder="Search questions..."
+              class="w-full bg-gray-800/70 text-gray-200 px-4 py-3 pl-11 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+            <i
+              class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-sm"
+            ></i>
+            <button
+              class="absolute right-3 top-3 text-gray-400 hover:text-white transition"
+            >
+              <i class="fas fa-sliders-h"></i>
+            </button>
+          </div>
+          <div class="flex w-full md:w-auto space-x-2">
+            <div class="relative">
+              <select
+                id="sortSelect"
+                class="bg-gray-800/70 text-gray-200 px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-8 transition"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="most_votes">Most Votes</option>
+                <option value="most_answers">Most Answers</option>
+                <option value="unanswered">Unanswered</option>
+              </select>
+              <i
+                class="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 text-xs pointer-events-none"
+              ></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions Header -->
+        <div
+          class="flex justify-between items-center mb-6 animate-fade-in-up"
+          style="animation-delay: 0.2s"
+        >
+          <h2 class="text-xl font-semibold text-white">Recent Questions</h2>
+          <a
+            href="{{ url_for('question', group_name=group.name) }}"
+            class="btn-primary flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-plus"></i> New Question
+          </a>
+        </div>
+
+        <!-- Questions List -->
+        {% if questions_with_votes|length == 0 %}
+        <div
+          class="bg-gray-800/30 rounded-xl p-12 text-center border-2 border-dashed border-gray-700/50 animate-fade-in-up"
+          style="animation-delay: 0.3s"
+        >
+          <div class="max-w-md mx-auto">
+            <div class="p-4 bg-indigo-900/20 rounded-full inline-block mb-4">
+              <i class="fas fa-question-circle text-4xl text-indigo-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-300 mb-2">
+              No questions yet in {{ group.name }}
+            </h3>
+            <p class="text-gray-500 text-sm mb-6">
+              Be the first to start a discussion and engage with the community
+            </p>
+            <a
+              href="{{ url_for('question', group_name=group.name) }}"
+              class="btn-primary flex items-center justify-center gap-2 mx-auto"
+            >
+              <i class="fas fa-plus"></i> Ask a Question
+            </a>
+          </div>
+        </div>
+        {% else %}
+        <div class="space-y-5">
+          {% for q in questions_with_votes %}
+          <div
+            class="question-card rounded-xl p-6 animate-fade-in-up"
+            style="animation-delay: {{ 0.3 + loop.index0 * 0.05 }}s"
+          >
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center space-x-3">
+                <a
+                  href="{{ url_for('other_status', user_name=q.question.sender.name) }}"
+                  class="flex-shrink-0"
+                >
+                  <div
+                    class="group-avatar w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                  >
+                    {{ q.question.sender.name[0].upper() }}{{
+                    q.question.sender.name[1].upper() if
+                    q.question.sender.name|length > 1 else '' }}
+                  </div>
+                </a>
+                <div>
+                  <a
+                    href="{{ url_for('other_status', user_name=q.question.sender.name) }}"
+                    class="text-sm font-medium hover:text-indigo-300 transition"
+                  >
+                    {{ q.question.sender.name }}
+                  </a>
+                  <div class="text-xs text-gray-400 flex items-center">
+                    <i class="far fa-clock mr-1"></i>
+                    {{ q.question.qsttime.strftime('%b %d, %Y at %H:%M') }}
+                  </div>
+                </div>
+              </div>
+              <button class="text-gray-400 hover:text-white p-1 transition">
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+            </div>
+
+            <a
+              href="{{ url_for('question_answers', qstid=q.question.qstid) }}"
+              class="block"
+            >
+              <h3
+                class="text-xl font-bold text-white mb-3 hover:text-indigo-300 transition-colors"
+              >
+                {{ q.question.qsttitle }}
+              </h3>
+              <p class="text-gray-300 text-sm line-clamp-3 mb-4">
+                {{ q.question.qstcontent }}
+              </p>
+            </a>
+
+            <div class="flex flex-wrap items-center justify-between mt-4">
+              <div class="flex items-center space-x-4">
+                <!-- Voting Buttons -->
+                <div class="flex items-center space-x-2">
+                  <button
+                    class="vote-btn upvote {{ 'active' if q.has_upvoted else '' }} text-gray-400 hover:text-green-400"
+                    data-questid="{{ q.question.qstid }}"
+                    onclick="voteQuestion('{{ q.question.qstid }}', 'up')"
+                  >
+                    <i class="fas fa-arrow-up text-lg"></i>
+                  </button>
+                  <span class="text-gray-200 font-medium vote-count">
+                    {{ q.net_count }}
+                  </span>
+                  <button
+                    class="vote-btn downvote {{ 'active' if q.has_downvoted else '' }} text-gray-400 hover:text-red-400"
+                    data-questid="{{ q.question.qstid }}"
+                    onclick="voteQuestion('{{ q.question.qstid }}', 'down')"
+                  >
+                    <i class="fas fa-arrow-down text-lg"></i>
+                  </button>
+                </div>
+
+                <a
+                  href="{{ url_for('question_answers', qstid=q.question.qstid) }}"
+                  class="badge bg-indigo-900/30 text-indigo-300 hover:bg-indigo-900/40 text-xs px-3 py-1.5 rounded-full flex items-center"
+                >
+                  <i class="far fa-comment-alt mr-1"></i>
+                  {{ q.question.answers|length }} answers
+                </a>
+                {% if q.question.answers|length == 0 %}
+                <span
+                  class="badge bg-red-900/30 text-red-300 hover:bg-red-900/40 text-xs px-3 py-1.5 rounded-full"
+                >
+                  <i class="far fa-question-circle mr-1"></i>
+                  Unanswered
+                </span>
+                {% endif %}
+              </div>
+
+              <div class="flex space-x-2">
+                <button
+                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition"
+                >
+                  <i class="far fa-bookmark mr-1"></i> Save
+                </button>
+                <button
+                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition"
+                >
+                  <i class="fas fa-share-alt mr-1"></i> Share
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <a
+      href="{{ url_for('question', group_name=group.name) }}"
+      class="floating-action-btn pulse md:hidden fixed bottom-8 right-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full p-4 z-20"
+    >
+      <i class="fas fa-plus text-xl"></i>
+    </a>
+
+    <script>
+      // Initialize UI components when DOM is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        // Mobile Menu Toggle
+        const menuButton = document.getElementById("menuButton");
+        const closeMenu = document.getElementById("closeMenu");
+        const mobileSidebar = document.getElementById("mobileSidebar");
+        const backdrop = document.getElementById("backdrop");
+
+        function toggleSidebar() {
+          mobileSidebar.classList.toggle("open");
+          backdrop.classList.toggle("open");
+          document.body.style.overflow = mobileSidebar.classList.contains("open") ? "hidden" : "";
+        }
+
+        menuButton.addEventListener("click", toggleSidebar);
+        closeMenu.addEventListener("click", toggleSidebar);
+        backdrop.addEventListener("click", toggleSidebar);
+
+        // Close sidebar when clicking on links
+        document.querySelectorAll("#mobileSidebar a").forEach(link => {
+          link.addEventListener("click", () => {
+            if (mobileSidebar.classList.contains("open")) toggleSidebar();
+          });
+        });
+
+        // Sorting Functionality
+        const sortSelect = document.getElementById("sortSelect");
+        const urlParams = new URLSearchParams(window.location.search);
+        sortSelect.value = urlParams.get("sort") || "newest";
+
+        sortSelect.addEventListener("change", function() {
+          window.location.href = window.location.pathname + "?sort=" + this.value;
+        });
+
+        // Question Card Animations
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = "1";
+              entry.target.style.transform = "translateY(0)";
+            }
+          });
+        }, {
+          threshold: 0.1,
+          rootMargin: "0px 0px -50px 0px"
+        });
+
+        document.querySelectorAll(".question-card").forEach((card, index) => {
+          card.style.opacity = "0";
+          card.style.transform = "translateY(20px)";
+          card.style.transition = `all 0.5s ease ${index * 0.1}s`;
+          observer.observe(card);
+        });
+      });
+
+      // Voting Functionality
+      async function voteQuestion(questid, voteType) {
+        if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+          alert("Please log in to vote");
+          return;
+        }
+
+        try {
+          const endpoint = voteType === 'up' ? '/upvote/' : '/downvote/';
+          const response = await fetch(endpoint + questid, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            // Update vote count display
+            const voteCountElement = document.querySelector(`[data-questid="${questid}"] + .vote-count`);
+            if (voteCountElement) {
+              voteCountElement.textContent = data.net_count;
+            }
+
+            // Update button states
+            const upvoteBtn = document.querySelector(`.upvote[data-questid="${questid}"]`);
+            const downvoteBtn = document.querySelector(`.downvote[data-questid="${questid}"]`);
+
+            if (voteType === 'up') {
+              upvoteBtn.classList.toggle('active', data.has_upvoted);
+              downvoteBtn.classList.remove('active');
+            } else {
+              downvoteBtn.classList.toggle('active', data.has_downvoted);
+              upvoteBtn.classList.remove('active');
+            }
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Groups | Clack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-extra-light: #e0e7ff;
+        --dark-1: #0f172a;
+        --dark-2: #1e293b;
+        --dark-3: #334155;
+        --light-1: #f8fafc;
+        --light-2: #e2e8f0;
+        --light-3: #94a3b8;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--dark-1), var(--dark-2));
+        font-family: "Inter", sans-serif;
+        color: var(--light-2);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        background: rgba(15, 23, 42, 0.98);
+        border-right: 1px solid rgba(71, 85, 105, 0.3);
+      }
+
+      .nav-item {
+        transition: all 0.2s ease;
+      }
+
+      .nav-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+      }
+
+      .nav-item.active {
+        background: rgba(99, 102, 241, 0.2);
+        border-left: 3px solid var(--primary);
+      }
+
+      .group-card {
+        transition: all 0.3s ease;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(55, 65, 81, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      .group-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+      }
+
+      .btn-secondary {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(30, 41, 59, 1);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+
+      .gradient-text {
+        background: linear-gradient(90deg, var(--primary-light), #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .group-avatar {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      }
+
+      .member-count {
+        position: relative;
+      }
+
+      .member-count::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -8px;
+        width: 1px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .tag {
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--primary-light);
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .active-members {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+
+      .active-members::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse 2s infinite;
+      }
+
+      .empty-state-illustration {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 2rem;
+        position: relative;
+      }
+
+      .empty-state-illustration::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(99, 102, 241, 0.05);
+        border-radius: 50%;
+        animation: pulse 4s infinite;
+      }
+
+      .empty-state-illustration svg {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: var(--primary);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      @media (max-width: 1023px) {
+        .sidebar {
+          position: fixed;
+          transform: translateX(-100%);
+          z-index: 50;
+          height: 100vh;
+          transition: transform 0.3s ease;
+          width: 280px;
+        }
+
+        .sidebar-open {
+          transform: translateX(0);
+        }
+
+        .overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.6);
+          z-index: 40;
+          backdrop-filter: blur(4px);
+        }
+
+        .overlay-active {
+          display: block;
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .ripple {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ripple:after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        transform: scale(10, 10);
+        opacity: 0;
+        transition: transform 0.5s, opacity 1s;
+      }
+
+      .ripple:active:after {
+        transform: scale(0, 0);
+        opacity: 0.3;
+        transition: 0s;
+      }
+
+      .activity-indicator {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.75rem;
+      }
+
+      .activity-indicator::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+      }
+
+      .high-activity::before {
+        background-color: #10b981;
+      }
+
+      .medium-activity::before {
+        background-color: #f59e0b;
+      }
+
+      .low-activity::before {
+        background-color: #64748b;
+      }
+
+      .header-gradient {
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.2),
+          rgba(99, 102, 241, 0.1)
+        );
+      }
+
+      .floating-btn {
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .floating-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside class="sidebar w-64 min-h-screen py-6 px-4 lg:block">
+        <div class="flex items-center gap-2 mb-8 px-2">
+          <h1 class="text-xl font-bold text-indigo-300 flex items-center gap-2">
+            <i class="fas fa-comments"></i> Clack
+          </h1>
+        </div>
+
+        <nav class="flex flex-col space-y-1">
+          <a
+            href="{{ url_for('home') }}"
+            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+          >
+            <i class="fas fa-home w-5 text-center"></i>
+            <span>Home</span>
+          </a>
+          <a
+            href="{{ url_for('show_groups') }}"
+            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+          >
+            <i class="fas fa-search w-5 text-center"></i>
+            <span>Discover</span>
+          </a>
+          <a
+            href="{{ url_for('my_group') }}"
+            class="nav-item active px-3 py-2.5 rounded-lg text-indigo-300 transition-colors flex items-center gap-3"
+          >
+            <i class="fas fa-users w-5 text-center"></i>
+            <span>My Groups</span>
+          </a>
+          <a
+            href="{{ url_for('suggest') }}"
+            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+          >
+            <i class="fas fa-lightbulb w-5 text-center"></i>
+            <span>Suggest</span>
+          </a>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-gray-800/50 px-2">
+          <a
+            href="{{ url_for('logout') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors"
+          >
+            <i class="fas fa-sign-out-alt w-5 text-center"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Overlay for mobile -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        <!-- Mobile Header -->
+        <header
+          class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10 lg:hidden"
+        >
+          <div
+            class="container mx-auto px-4 py-3 flex items-center justify-between"
+          >
+            <button
+              id="mobile-menu-button"
+              class="text-gray-300 hover:text-indigo-300 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="text-lg font-semibold text-indigo-300">My Groups</h1>
+            <div
+              class="w-8 h-8 bg-gray-800/50 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-users text-sm text-gray-400"></i>
+            </div>
+          </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="relative header-gradient py-12 px-6 overflow-hidden">
+          <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-20">
+              <div
+                class="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-indigo-500/30 animate-float"
+              ></div>
+              <div
+                class="absolute top-1/3 right-1/4 w-40 h-40 rounded-full bg-purple-500/30 animate-float"
+                style="animation-delay: 1s"
+              ></div>
+            </div>
+          </div>
+          <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+              <span class="gradient-text">Your Study Communities</span>
+            </h1>
+            <p class="text-gray-300 max-w-2xl mx-auto text-lg md:text-xl mb-8">
+              Connect and collaborate with your joined study groups
+            </p>
+          </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
+          <div class="mb-6 space-y-3">
+            {% for category, message in messages %}
+            <div
+              class="p-4 rounded-lg flex items-start gap-3 {% if category == 'success' %}bg-green-900/30 text-green-200 border border-green-800/50{% elif category == 'error' %}bg-red-900/30 text-red-200 border border-red-800/50{% else %}bg-blue-900/30 text-blue-200 border border-blue-800/50{% endif %}"
+            >
+              <i
+                class="fas mt-0.5 {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"
+              ></i>
+              <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %} {% endwith %} {% if groups|length == 0 %}
+          <!-- Empty State -->
+          <div
+            class="flex flex-col items-center justify-center text-center py-20 px-4 text-gray-500 animate-fade-in"
+          >
+            <div class="empty-state-illustration">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-medium text-gray-300 mb-3">
+              No Groups Yet
+            </h3>
+            <p class="max-w-md mb-6 text-gray-400 text-lg">
+              You haven't joined any study groups yet. Discover and connect with
+              learners who share your academic interests.
+            </p>
+            <a
+              href="{{ url_for('show_groups') }}"
+              class="btn-primary text-white font-medium px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 hover:shadow-lg ripple"
+            >
+              <i class="fas fa-search"></i> Browse Groups
+            </a>
+          </div>
+          {% else %}
+          <!-- Groups List -->
+          <div class="mb-8">
+            <div
+              class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4"
+            >
+              <div>
+                <h2 class="text-2xl font-bold text-white mb-1">
+                  Your Study Groups
+                </h2>
+                <p class="text-gray-400">
+                  <span class="text-indigo-300 font-medium"
+                    >{{ groups|length }}</span
+                  >
+                  active group{% if groups|length != 1 %}s{% endif %}
+                </p>
+              </div>
+              <div class="flex items-center gap-3">
+                <a
+                  href="{{ url_for('show_groups') }}"
+                  class="text-sm text-indigo-400 hover:text-indigo-300 px-4 py-2 rounded-lg hover:bg-gray-800/50 transition flex items-center gap-2"
+                >
+                  <i class="fas fa-plus"></i> Join More
+                </a>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {% for group in groups %} {% if group.isapproved %}
+              <div class="group-card rounded-xl p-5 hover:shadow-lg">
+                <div class="flex items-start gap-4 mb-4">
+                  <div
+                    class="group-avatar w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 text-xl"
+                  >
+                    {{ group.name[0]|upper }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-white truncate">
+                      {{ group.name }}
+                    </h3>
+                    <div
+                      class="flex items-center gap-3 text-xs text-gray-400 mt-1"
+                    >
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-user-friends"></i>
+                        <span
+                          >{{ group.members|length }} member{{ 's' if
+                          group.members|length != 1 else '' }}</span
+                        >
+                      </span>
+                      <span class="member-count pl-2 flex items-center gap-1">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span
+                          >{{ group.datecreated.strftime("%b %d, %Y") }}</span
+                        >
+                      </span>
+                      {% if group.messages|length > 10 %}
+                      <span class="activity-indicator high-activity ml-2">
+                        Active
+                      </span>
+                      {% elif group.messages|length > 3 %}
+                      <span class="activity-indicator medium-activity ml-2">
+                        Some activity
+                      </span>
+                      {% else %}
+                      <span class="activity-indicator low-activity ml-2">
+                        New
+                      </span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <p
+                  class="text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed"
+                >
+                  {{ group.groupdesc }}
+                </p>
+
+                <!-- Group tags -->
+                <div class="mb-4 flex flex-wrap">
+                  {% for tag in group.tags %}
+                  <span class="tag">
+                    <i class="fas fa-tag mr-1"></i> {{ tag.tag_name }}
+                  </span>
+                  {% endfor %}
+                </div>
+
+                <div class="flex gap-3">
+                  <a
+                    href="{{ url_for('group_questions', group_name=group.name) }}"
+                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 hover:bg-gray-800/90 ripple"
+                  >
+                    <i class="fas fa-question-circle"></i> Questions ({{
+                    group.questions|length }})
+                  </a>
+                  <a
+                    href="{{ url_for('chat', group_name=group.name) }}"
+                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 hover:bg-gray-800/90 ripple"
+                  >
+                    <i class="fas fa-comment-dots"></i> Chat ({{
+                    group.messages|length }})
+                  </a>
+                </div>
+              </div>
+              {% endif %} {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- CTA Section -->
+          <div
+            class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-2xl p-8 border border-gray-700/50 mt-12 text-center relative overflow-hidden"
+          >
+            <div
+              class="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-indigo-500/10"
+            ></div>
+            <div
+              class="absolute -left-20 -bottom-20 w-60 h-60 rounded-full bg-purple-500/10"
+            ></div>
+            <div class="relative z-10 max-w-2xl mx-auto">
+              <div
+                class="w-16 h-16 bg-indigo-900/30 rounded-xl flex items-center justify-center mx-auto mb-5"
+              >
+                <i class="fas fa-search text-2xl text-indigo-400"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">
+                Looking for more groups?
+              </h3>
+              <p class="text-gray-300 mb-6">
+                Discover new study groups that match your academic interests and
+                goals.
+              </p>
+              <a
+                href="{{ url_for('show_groups') }}"
+                class="btn-primary inline-block text-white px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto hover:shadow-lg ripple"
+              >
+                <i class="fas fa-search"></i> Browse Groups
+              </a>
+            </div>
+          </div>
+        </main>
+
+        <!-- Footer -->
+        <footer
+          class="text-center text-sm text-gray-500 py-8 border-t border-gray-800/50 mt-12"
+        >
+          <div class="container mx-auto px-4">
+            <div
+              class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6"
+            >
+              <div class="flex items-center gap-2">
+                <i class="fas fa-comments text-indigo-400"></i>
+                <span class="font-medium text-white">Clack</span>
+              </div>
+              <div class="flex items-center gap-6">
+                <a href="#" class="hover:text-indigo-300 transition">About</a>
+                <a href="#" class="hover:text-indigo-300 transition">Privacy</a>
+                <a href="#" class="hover:text-indigo-300 transition">Terms</a>
+                <a href="#" class="hover:text-indigo-300 transition">Contact</a>
+              </div>
+            </div>
+            <p>&copy; 2025 Clack · Learn. Connect. Elevate.</p>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <a
+      href="{{ url_for('show_groups') }}"
+      class="lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-xl floating-btn"
+    >
+      <i class="fas fa-plus text-xl"></i>
+    </a>
+
+    <script>
+      // Mobile sidebar toggle
+      const mobileMenuButton = document.getElementById("mobile-menu-button");
+      const sidebar = document.querySelector(".sidebar");
+      const overlay = document.getElementById("overlay");
+
+      mobileMenuButton?.addEventListener("click", () => {
+        sidebar.classList.add("sidebar-open");
+        overlay.classList.add("overlay-active");
+        document.body.style.overflow = "hidden";
+      });
+
+      overlay?.addEventListener("click", () => {
+        sidebar.classList.remove("sidebar-open");
+        overlay.classList.remove("overlay-active");
+        document.body.style.overflow = "auto";
+      });
+
+      // Improved date formatting
+      document.querySelectorAll(".member-count span").forEach((el) => {
+        const dateText = el.textContent;
+        const date = new Date(dateText);
+        const now = new Date();
+        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+        let displayText;
+        if (diffDays === 0) {
+          displayText = "Today";
+        } else if (diffDays === 1) {
+          displayText = "Yesterday";
+        } else if (diffDays < 7) {
+          displayText = `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+          const weeks = Math.floor(diffDays / 7);
+          displayText = `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+        } else {
+          displayText = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+        }
+
+        el.textContent = displayText;
+      });
+
+      // Auto-dismiss flash messages after 5 seconds
+      setTimeout(() => {
+        document.querySelectorAll("[class*='bg-']").forEach((el) => {
+          if (
+            el.classList.contains("bg-green-900/30") ||
+            el.classList.contains("bg-red-900/30") ||
+            el.classList.contains("bg-blue-900/30")
+          ) {
+            el.style.transition = "opacity 0.5s ease";
+            el.style.opacity = "0";
+            setTimeout(() => el.remove(), 500);
+          }
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>

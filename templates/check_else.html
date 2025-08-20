@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ user.name }} | Clack Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cosmic: {
+                dark: "#0f172a",
+                darker: "#0b1120",
+                light: "#1e293b",
+                border: "rgba(56, 70, 112, 0.3)",
+                accent: "#6366f1",
+                purple: "#8b5cf6",
+                pink: "#d946ef",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #0b1120, #0f172a);
+        color: #e2e8f0;
+      }
+      .profile-header {
+        background: linear-gradient(
+          135deg,
+          #6366f1 0%,
+          #8b5cf6 50%,
+          #d946ef 100%
+        );
+      }
+      .profile-card {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(56, 70, 112, 0.3);
+        transition: all 0.2s ease;
+      }
+      .profile-card:hover {
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-2px);
+      }
+      .stat-card {
+        background: rgba(30, 41, 59, 0.5);
+        border-left: 4px solid;
+      }
+      .stat-messages {
+        border-left-color: #6366f1;
+      }
+      .stat-questions {
+        border-left-color: #10b981;
+      }
+      .stat-answers {
+        border-left-color: #f59e0b;
+      }
+      .stat-groups {
+        border-left-color: #8b5cf6;
+      }
+      .question-card {
+        background: rgba(30, 41, 59, 0.3);
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+      }
+      .question-card:hover {
+        border-left-color: #6366f1;
+        background: rgba(30, 41, 59, 0.5);
+      }
+      .group-chip {
+        background: rgba(30, 41, 59, 0.5);
+        transition: all 0.2s ease;
+      }
+      .group-chip:hover {
+        background: rgba(56, 70, 112, 0.5);
+      }
+      .scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: #334155 transparent;
+      }
+      .scroll-container::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .scroll-container::-webkit-scrollbar-thumb {
+        background-color: #334155;
+        border-radius: 3px;
+      }
+      .avatar-outline {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      }
+      .text-gradient {
+        background: linear-gradient(90deg, #818cf8, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .border-gradient {
+        border-image: linear-gradient(135deg, #6366f1, #8b5cf6) 1;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div
+      id="flash-container"
+      class="fixed top-4 left-0 right-0 z-50 flex justify-center"
+    >
+      <div class="w-full max-w-4xl mx-4">
+        {% for category, message in messages %}
+        <div
+          class="p-4 mb-3 rounded-lg shadow-lg text-white font-medium text-center {% if category == 'error' %} bg-red-600 {% elif category == 'success' %} bg-green-600 {% else %} bg-blue-600 {% endif %}"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <script>
+      setTimeout(() => {
+        const flashContainer = document.getElementById("flash-container");
+        if (flashContainer) {
+          flashContainer.style.transition = "opacity 0.5s ease";
+          flashContainer.style.opacity = "0";
+          setTimeout(() => flashContainer.remove(), 500);
+        }
+      }, 5000);
+    </script>
+    {% endif %} {% endwith %}
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Back Button -->
+      <div class="pt-6 pb-2">
+        <a
+          href="{{ url_for('home') }}"
+          class="inline-flex items-center text-indigo-300 hover:text-indigo-100 transition font-medium"
+        >
+          <i class="fas fa-arrow-left mr-2"></i> Back to Home
+        </a>
+      </div>
+
+      <!-- Profile Header -->
+      <div class="profile-header rounded-xl overflow-hidden mb-6">
+        <div class="p-6 md:p-8 text-white">
+          <div
+            class="flex flex-col md:flex-row items-start md:items-center gap-6"
+          >
+            <div
+              class="w-24 h-24 rounded-full bg-slate-900 flex items-center justify-center text-4xl font-bold text-indigo-300 avatar-outline"
+            >
+              {{ user.name[0]|upper }}
+            </div>
+            <div class="flex-1">
+              <h1 class="text-2xl md:text-3xl font-bold">{{ user.name }}</h1>
+              <p class="text-indigo-100">{{ user.email }}</p>
+              <div class="mt-3 flex items-center text-sm text-indigo-200">
+                <span class="inline-flex items-center mr-4">
+                  <i class="far fa-calendar mr-1.5"></i>
+                  Joined {{ user.time.strftime('%b %Y') }}
+                </span>
+                <span class="inline-flex items-center">
+                  <i class="fas fa-users mr-1.5"></i>
+                  {{ user.groups|length }} groups
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Left Column - Stats -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Activity Stats -->
+          <div class="profile-card rounded-xl p-6 border-gradient">
+            <h2 class="text-lg font-semibold mb-4 text-gradient">
+              <i class="fas fa-chart-line mr-2"></i>Activity Overview
+            </h2>
+            <div class="space-y-3">
+              <div class="stat-card stat-groups rounded p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-400">Groups</p>
+                    <p class="text-2xl font-bold text-slate-100">
+                      {{ user.groups|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center text-purple-300"
+                  >
+                    <i class="fas fa-users"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card stat-questions rounded p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-400">Questions</p>
+                    <p class="text-2xl font-bold text-slate-100">
+                      {{ user.questions|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-green-900/30 flex items-center justify-center text-green-300"
+                  >
+                    <i class="fas fa-question-circle"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card stat-answers rounded p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-400">Answers</p>
+                    <p class="text-2xl font-bold text-slate-100">
+                      {{ user.answers|length }}
+                    </p>
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center text-amber-300"
+                  >
+                    <i class="fas fa-reply"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Groups -->
+          <div class="profile-card rounded-xl p-6 border-gradient">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gradient">
+                <i class="fas fa-users mr-2"></i>Groups
+              </h2>
+              <span class="text-sm text-slate-400"
+                >{{ user.groups|length }} total</span
+              >
+            </div>
+            {% if user.groups %}
+            <div class="scroll-container max-h-60 overflow-y-auto pr-2">
+              <div class="space-y-2">
+                {% for group in user.groups %}
+                <a
+                  href="{{ url_for('chat', group_name=group.name) }}"
+                  class="group-chip block px-3 py-2 rounded-lg text-sm font-medium text-slate-200"
+                >
+                  <div class="flex items-center">
+                    <span
+                      class="w-6 h-6 rounded-full bg-indigo-900/50 text-indigo-300 flex items-center justify-center mr-2 text-xs font-bold"
+                      >{{ group.name[0] }}</span
+                    >
+                    {{ group.name }}
+                  </div>
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-slate-500">
+              <i class="fas fa-users-slash text-2xl mb-2 text-slate-600"></i>
+              <p class="text-slate-400">No groups yet</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Right Column - Questions -->
+        <div class="lg:col-span-2">
+          <div class="profile-card rounded-xl p-6 border-gradient">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-semibold text-gradient">
+                <i class="fas fa-question-circle mr-2"></i>Recent Questions
+              </h2>
+              <span class="text-sm text-slate-400"
+                >{{ user.questions|length }} total</span
+              >
+            </div>
+
+            {% if user.questions %}
+            <div class="space-y-4">
+              {% for question in user.questions[-5:]|reverse %}
+              <a
+                href="{{ url_for('chat', group_name=question.group.name) }}?q={{ question.qstid }}"
+                class="question-card block p-4 rounded-lg border border-slate-800"
+              >
+                <div class="flex items-start">
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-slate-100 truncate">
+                      {{ question.qsttitle }}
+                    </h3>
+                    <p class="text-sm text-slate-400 mt-1 line-clamp-2">
+                      {{ question.qstcontent }}
+                    </p>
+                    <div class="mt-3 flex items-center text-xs text-slate-500">
+                      <span class="flex items-center mr-3">
+                        <i class="fas fa-reply mr-1.5"></i>
+                        {{ question.answers|length }} answers
+                      </span>
+                      <span class="flex items-center mr-3">
+                        <i class="fas fa-thumbs-up mr-1.5"></i>
+                        {{ question.votes|sum(attribute='value') }} votes
+                      </span>
+                      <span class="flex items-center">
+                        <i class="fas fa-clock mr-1.5"></i>
+                        {{ question.qsttime.strftime('%b %d') }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ml-4 flex-shrink-0">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300"
+                    >
+                      {{ question.group.name }}
+                    </span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+              <i
+                class="fas fa-question-circle text-3xl text-slate-700 mb-3"
+              ></i>
+              <p class="text-slate-400">No questions asked yet</p>
+              <p class="text-sm text-slate-500 mt-1">
+                When {{ user.name }} asks questions, they'll appear here
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

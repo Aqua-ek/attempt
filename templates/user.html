@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ session['username'] }} | Clack Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #141241;
+        --dark-1: #0f172a;
+        --dark-2: #1e293b;
+        --dark-3: #334155;
+        --light-1: #f8fafc;
+        --light-2: #e2e8f0;
+        --light-3: #94a3b8;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--dark-1), var(--dark-2));
+        font-family: "Inter", sans-serif;
+        color: var(--light-2);
+        min-height: 100vh;
+      }
+
+      .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-auto-rows: minmax(150px, auto);
+        gap: 1.5rem;
+        padding: 1.5rem;
+        max-width: 1800px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-0.25rem);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+
+      .profile-card {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-card::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(99, 102, 241, 0.1) 0%,
+          transparent 70%
+        );
+        transform: rotate(30deg);
+      }
+
+      .stat-card {
+        background: rgba(15, 23, 42, 0.6);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          var(--primary),
+          var(--primary-dark)
+        );
+        border-radius: 0.75rem 0 0 0.75rem;
+      }
+
+      .wide-card {
+        grid-column: span 2;
+      }
+
+      .tall-card {
+        grid-row: span 2;
+      }
+
+      .avatar-gradient {
+        background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+        padding: 2px;
+        border-radius: 9999px;
+      }
+
+      .text-gradient {
+        background: linear-gradient(
+          90deg,
+          var(--primary-light),
+          var(--primary)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: var(--dark-3) transparent;
+      }
+
+      .scroll-container::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .scroll-container::-webkit-scrollbar-thumb {
+        background-color: var(--dark-3);
+        border-radius: 3px;
+      }
+
+      .glow-effect {
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+      }
+
+      .fade-in {
+        animation: fadeIn 0.8s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .dashboard-container {
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        .wide-card {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-container {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="fade-in">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div
+      id="flash-container"
+      class="fixed top-4 left-0 right-0 z-50 flex justify-center"
+    >
+      <div class="w-full max-w-md mx-4">
+        {% for category, message in messages %}
+        <div
+          class="flash-message p-4 mb-3 rounded-lg shadow-lg text-white font-medium text-center {% if category == 'error' %} bg-red-600 {% elif category == 'success' %} bg-green-600 {% else %} bg-blue-600 {% endif %}"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <script>
+      setTimeout(() => {
+        const flashContainer = document.getElementById("flash-container");
+        if (flashContainer) {
+          flashContainer.style.transition = "opacity 0.5s ease";
+          flashContainer.style.opacity = "0";
+          setTimeout(() => flashContainer.remove(), 500);
+        }
+      }, 5000);
+    </script>
+    {% endif %} {% endwith %}
+
+    <div class="dashboard-container">
+      <!-- Profile Card (Full Width) -->
+      <div class="profile-card card">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10"
+        >
+          <div class="flex items-center gap-4">
+            <div class="avatar-gradient glow-effect">
+              <div
+                class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center text-2xl font-bold text-white"
+              >
+                {{ session['username'][0]|upper }}
+              </div>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-white">{{ user.name }}</h1>
+              <p class="text-indigo-200">{{ user.email }}</p>
+              <p class="text-indigo-100 text-sm mt-1">
+                <i class="far fa-calendar mr-1"></i>
+                Joined {{ user.time.strftime('%b %Y') }}
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <a
+              href="{{ url_for('home') }}"
+              class="px-4 py-2 bg-indigo-900/40 hover:bg-indigo-900/60 rounded-lg transition flex items-center gap-2 text-white hover:glow-effect"
+            >
+              <i class="fas fa-home"></i> Home
+            </a>
+            <a
+              href="{{ url_for('logout') }}"
+              class="px-4 py-2 bg-red-600/90 hover:bg-red-500 rounded-lg transition flex items-center gap-2 text-white"
+            >
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <!-- <div class="stat-card card relative">
+        <div class="text-4xl font-bold text-indigo-400 mb-2">{{gp_amt}}</div>
+        <div class="text-gray-400">Groups Joined</div>
+        <a
+          href="{{ url_for('show_groups') }}"
+          class="text-xs text-indigo-400 hover:underline mt-2"
+          >View all <i class="fas fa-chevron-right ml-1"></i
+        ></a>
+      </div>
+
+      <div class="stat-card card relative">
+        <div class="text-4xl font-bold text-purple-400 mb-2">{{msg_amt}}</div>
+        <div class="text-gray-400">Messages Sent</div>
+      </div>
+
+      <div class="stat-card card relative">
+        <div class="text-4xl font-bold text-green-400 mb-2">{{qst_amt}}</div>
+        <div class="text-gray-400">Questions Asked</div>
+      </div> -->
+
+      <!-- Recent Groups (Wide Card) -->
+      <div class="card wide-card tall-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gradient">
+            <i class="fas fa-users mr-2"></i> Your Groups
+          </h2>
+          <a
+            href="{{ url_for('show_groups') }}"
+            class="text-xs text-indigo-400 hover:underline"
+            >View All</a
+          >
+        </div>
+        <div
+          class="space-y-3 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
+        >
+          {% for group in recent_groups %}
+          <a
+            href="{{ url_for('chat', group_name=group.name) }}"
+            class="flex items-center gap-3 p-3 rounded-lg bg-gray-800/30 border border-gray-700/50 hover:bg-gray-700/50 transition group"
+          >
+            <div
+              class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+            >
+              {{ group.name[0] }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-medium truncate">{{ group.name }}</h3>
+              <p class="text-sm text-gray-400">
+                {{ group.members|length }} members
+              </p>
+            </div>
+            <i
+              class="fas fa-chevron-right text-gray-400 group-hover:text-indigo-300 transition"
+            ></i>
+          </a>
+          {% endfor %} {% if recent_groups|length == 0 %}
+          <div class="text-center py-6 text-gray-500">
+            <i class="fas fa-users-slash text-3xl mb-2"></i>
+            <p>No groups joined yet</p>
+            <a
+              href="{{ url_for('show_groups') }}"
+              class="text-indigo-400 hover:underline mt-2 inline-block"
+              >Browse Groups</a
+            >
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <h2 class="text-xl font-semibold text-gradient mb-4">
+          <i class="fas fa-bolt mr-2"></i> Quick Actions
+        </h2>
+        <div class="space-y-3">
+          <a
+            href="{{ url_for('show_groups') }}"
+            class="p-3 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition flex items-center gap-3 group"
+          >
+            <div
+              class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white transition group-hover:bg-indigo-500"
+            >
+              <i class="fas fa-search"></i>
+            </div>
+            <div>
+              <h3 class="font-medium">Find Groups</h3>
+              <p class="text-xs text-gray-400">Join new communities</p>
+            </div>
+          </a>
+          <a
+            href="{{ url_for('suggest') }}"
+            class="p-3 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition flex items-center gap-3 group"
+          >
+            <div
+              class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white transition group-hover:bg-purple-500"
+            >
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div>
+              <h3 class="font-medium">Suggest Group</h3>
+              <p class="text-xs text-gray-400">Request new subject</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Questions -->
+      <div class="card tall-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gradient">
+            <i class="fas fa-question-circle mr-2"></i> Recent Questions
+          </h2>
+          <span class="text-xs text-gray-400"
+            >{{ user.questions|length }} total</span
+          >
+        </div>
+        <div
+          class="space-y-4 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
+        >
+          {% if user.questions|length > 0 %} {% for question in
+          user.questions[-3:] %}
+          <a
+            href="{{ url_for('group_questions', group_name=question.group.name) }}"
+            class="block p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition"
+          >
+            <h3 class="font-medium text-sm">{{ question.qsttitle }}</h3>
+            <p class="text-xs text-gray-400 mt-1 line-clamp-2">
+              {{ question.qstcontent }}
+            </p>
+            <div class="flex items-center gap-2 mt-2">
+              <div
+                class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center text-xs text-white"
+              >
+                {{ question.group.name[0] }}
+              </div>
+              <span class="text-xs text-indigo-400"
+                >{{ question.group.name }}</span
+              >
+              <span class="text-xs text-gray-500 ml-auto">
+                {{ question.qsttime.strftime('%b %d') }}
+              </span>
+            </div>
+          </a>
+          {% endfor %} {% else %}
+          <div class="text-center py-6 text-gray-500">
+            <i class="fas fa-question text-3xl mb-2"></i>
+            <p>No questions yet</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Recent Messages -->
+      <div class="card tall-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gradient">
+            <i class="fas fa-comment-dots mr-2"></i> Recent Messages
+          </h2>
+          <span class="text-xs text-gray-400"
+            >{{ user.messages|length }} total</span
+          >
+        </div>
+        <div
+          class="space-y-4 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
+        >
+          {% if user.messages|length > 0 %} {% for message in user.messages[-3:]
+          %}
+          <a
+            href="{{ url_for('chat', group_name=message.group.name) }}"
+            class="block p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition"
+          >
+            <div class="flex items-center gap-2 mb-1">
+              <div
+                class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center text-xs text-white"
+              >
+                {{ message.group.name[0] }}
+              </div>
+              <span class="text-sm font-medium">{{ message.group.name }}</span>
+              <span class="text-xs text-gray-500 ml-auto">
+                {{ message.msgtime.strftime('%b %d') }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-300 line-clamp-2">
+              {{ message.content }}
+            </p>
+          </a>
+          {% endfor %} {% else %}
+          <div class="text-center py-6 text-gray-500">
+            <i class="fas fa-comment-slash text-3xl mb-2"></i>
+            <p>No messages yet</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="text-center text-sm text-gray-500 py-6 border-t border-gray-800/50 mt-8"
+    >
+      <p>&copy; 2025 Clack · Learn. Connect. Elevate.</p>
+    </div>
+  </body>
+</html>

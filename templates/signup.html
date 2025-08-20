@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join EduConnect - Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+      }
+
+      .form-input {
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      }
+
+      .password-toggle {
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+      }
+
+      .strength-meter {
+        height: 4px;
+        transition: width 0.3s ease;
+      }
+
+      .strength-0 {
+        width: 20%;
+        background-color: #ef4444;
+      }
+      .strength-1 {
+        width: 40%;
+        background-color: #f97316;
+      }
+      .strength-2 {
+        width: 60%;
+        background-color: #eab308;
+      }
+      .strength-3 {
+        width: 80%;
+        background-color: #84cc16;
+      }
+      .strength-4 {
+        width: 100%;
+        background-color: #10b981;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen flex items-center justify-center px-4 text-white font-sans"
+  >
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div
+      id="flash-container"
+      class="fixed top-4 left-0 right-0 z-50 flex justify-center"
+    >
+      <div class="w-full max-w-md mx-4">
+        {% for category, message in messages %}
+        <div
+          class="p-4 mb-3 rounded-lg shadow-lg text-white text-center font-medium {% if category == 'error' %} bg-red-600 {% elif category == 'success' %} bg-green-600 {% else %} bg-blue-600 {% endif %} animate__animated animate__fadeInDown"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <script>
+      setTimeout(() => {
+        const flashContainer = document.getElementById("flash-container");
+        if (flashContainer) {
+          flashContainer.style.transition = "opacity 0.5s ease";
+          flashContainer.style.opacity = "0";
+          setTimeout(() => flashContainer.remove(), 500);
+        }
+      }, 5000);
+    </script>
+    {% endif %} {% endwith %}
+
+    <div
+      class="bg-gray-900/80 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-800"
+    >
+      <div class="text-center mb-8">
+        <div class="flex justify-center mb-4">
+          <div
+            class="w-16 h-16 bg-indigo-600 rounded-xl flex items-center justify-center"
+          >
+            <i class="fas fa-graduation-cap text-2xl"></i>
+          </div>
+        </div>
+        <h2
+          class="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2"
+        >
+          Join Clack
+        </h2>
+        <p class="text-gray-400">Create your free account to get started</p>
+      </div>
+
+      <form method="POST" novalidate class="space-y-5">
+        {{ form.hidden_tag() }}
+
+        <div>
+          {{ form.email.label(class="block text-sm font-medium mb-2
+          text-gray-300") }}
+          <div class="relative">
+            {{ form.email(class="w-full px-4 py-3 bg-gray-800 rounded-lg border
+            border-gray-700 focus:outline-none form-input placeholder-gray-500",
+            placeholder="your@email.com") }}
+            <i
+              class="fas fa-envelope absolute right-3 top-3.5 text-gray-500"
+            ></i>
+          </div>
+          {% for error in form.email.errors %}
+          <p class="text-sm text-red-400 mt-1 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i> {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <div>
+          {{ form.name.label(class="block text-sm font-medium mb-2
+          text-gray-300") }}
+          <div class="relative">
+            {{ form.name(class="w-full px-4 py-3 bg-gray-800 rounded-lg border
+            border-gray-700 focus:outline-none form-input placeholder-gray-500",
+            placeholder="username") }}
+            <i class="fas fa-user absolute right-3 top-3.5 text-gray-500"></i>
+          </div>
+          {% for error in form.name.errors %}
+          <p class="text-sm text-red-400 mt-1 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i> {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <div>
+          {{ form.password.label(class="block text-sm font-medium mb-2
+          text-gray-300") }}
+          <div class="relative">
+            {{ form.password(class="w-full px-4 py-3 bg-gray-800 rounded-lg
+            border border-gray-700 focus:outline-none form-input
+            placeholder-gray-500 pr-10", placeholder="••••••••", id="password")
+            }}
+            <i class="fas fa-eye-slash password-toggle" id="togglePassword"></i>
+          </div>
+          <div class="mt-2">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Password strength</span>
+              <span id="strength-text">Weak</span>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-1.5">
+              <div
+                class="strength-meter rounded-full h-1.5"
+                id="strength-meter"
+              ></div>
+            </div>
+          </div>
+          {% for error in form.password.errors %}
+          <p class="text-sm text-red-400 mt-1 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i> {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <div>
+          {{ form.confirm_password.label(class="block text-sm font-medium mb-2
+          text-gray-300") }}
+          <div class="relative">
+            {{ form.confirm_password(class="w-full px-4 py-3 bg-gray-800
+            rounded-lg border border-gray-700 focus:outline-none form-input
+            placeholder-gray-500 pr-10", placeholder="••••••••",
+            id="confirmPassword") }}
+            <i
+              class="fas fa-eye-slash password-toggle"
+              id="toggleConfirmPassword"
+            ></i>
+          </div>
+          {% for error in form.confirm_password.errors %}
+          <p class="text-sm text-red-400 mt-1 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i> {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <div class="flex items-center">
+          <input
+            id="terms"
+            type="checkbox"
+            class="w-4 h-4 rounded bg-gray-800 border-gray-700 focus:ring-indigo-500"
+          />
+          <label for="terms" class="ml-2 text-sm text-gray-300">
+            I agree to the
+            <a href="#" class="text-indigo-400 hover:underline"
+              >Terms of Service</a
+            >
+            and
+            <a href="#" class="text-indigo-400 hover:underline"
+              >Privacy Policy</a
+            >
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-indigo-500/20 flex items-center justify-center gap-2"
+        >
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+
+        <div class="text-center text-sm text-gray-400">
+          Already have an account?
+          <a
+            href="{{ url_for('login') }}"
+            class="text-indigo-400 hover:underline font-medium"
+          >
+            Sign in here
+          </a>
+        </div>
+      </form>
+
+      <div class="mt-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-gray-900 text-gray-400">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <a
+            href="#"
+            class="w-full bg-gray-800 hover:bg-gray-700 transition text-white py-2 rounded-lg flex items-center justify-center gap-2"
+          >
+            <i class="fab fa-google text-red-400"></i> Google
+          </a>
+          <a
+            href="#"
+            class="w-full bg-gray-800 hover:bg-gray-700 transition text-white py-2 rounded-lg flex items-center justify-center gap-2"
+          >
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Password toggle visibility
+      const togglePassword = document.querySelector("#togglePassword");
+      const password = document.querySelector("#password");
+
+      const toggleConfirmPassword = document.querySelector(
+        "#toggleConfirmPassword"
+      );
+      const confirmPassword = document.querySelector("#confirmPassword");
+
+      togglePassword.addEventListener("click", function () {
+        const type =
+          password.getAttribute("type") === "password" ? "text" : "password";
+        password.setAttribute("type", type);
+        this.classList.toggle("fa-eye-slash");
+        this.classList.toggle("fa-eye");
+      });
+
+      toggleConfirmPassword.addEventListener("click", function () {
+        const type =
+          confirmPassword.getAttribute("type") === "password"
+            ? "text"
+            : "password";
+        confirmPassword.setAttribute("type", type);
+        this.classList.toggle("fa-eye-slash");
+        this.classList.toggle("fa-eye");
+      });
+
+      // Password strength meter
+      password.addEventListener("input", function () {
+        const strengthText = document.querySelector("#strength-text");
+        const strengthMeter = document.querySelector("#strength-meter");
+        const strength = calculatePasswordStrength(this.value);
+
+        strengthMeter.className =
+          "strength-meter rounded-full h-1.5 strength-" + strength.score;
+
+        const strengthLabels = [
+          "Very Weak",
+          "Weak",
+          "Medium",
+          "Strong",
+          "Very Strong",
+        ];
+        strengthText.textContent = strengthLabels[strength.score];
+        strengthText.className =
+          strength.score < 2
+            ? "text-red-400"
+            : strength.score < 4
+            ? "text-yellow-400"
+            : "text-green-400";
+      });
+
+      function calculatePasswordStrength(password) {
+        let score = 0;
+
+        // Length check
+        if (password.length > 0) score += 1;
+        if (password.length >= 8) score += 1;
+        if (password.length >= 12) score += 1;
+
+        // Complexity checks
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+        // Cap at 4 for our meter
+        return { score: Math.min(4, score) };
+      }
+
+      // Form validation
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const termsChecked = document.querySelector("#terms").checked;
+        if (!termsChecked) {
+          e.preventDefault();
+          alert("Please agree to the Terms of Service and Privacy Policy");
+        }
+      });
+    </script>
+  </body>
+</html>

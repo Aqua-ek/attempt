@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Tags | Clack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(135deg, #0b1120, #0f172a);
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+      }
+
+      .gradient-text {
+        background: linear-gradient(90deg, #818cf8, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .glass-card {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(56, 70, 112, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .tag-card {
+        transition: all 0.2s ease;
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+      }
+
+      .tag-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+      }
+
+      .tag-card.selected {
+        background: rgba(79, 70, 229, 0.2);
+        border-color: rgba(99, 102, 241, 0.8);
+        box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+      }
+
+      .tag-pill {
+        background: rgba(79, 70, 229, 0.2);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+      }
+
+      .tag-pill:hover {
+        background: rgba(79, 70, 229, 0.3);
+      }
+
+      .header-blur {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      }
+
+      .group-badge {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+      }
+    </style>
+  </head>
+
+  <body class="text-gray-200">
+    <!-- Navigation -->
+    <header
+      class="header-blur p-4 flex items-center justify-between sticky top-0 z-40 border-b border-gray-800"
+    >
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-book-open text-xl text-indigo-400"></i>
+        <h1 class="text-xl font-semibold gradient-text">Clack</h1>
+      </div>
+      <a
+        href="{{ url_for('home') }}"
+        class="text-gray-400 hover:text-indigo-300 transition duration-200"
+      >
+        <i class="fas fa-home text-xl"></i>
+      </a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="glass-card rounded-xl p-6 mb-8">
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"
+        >
+          <div>
+            <h2 class="text-2xl font-bold gradient-text mb-2">
+              Tag Your Group
+            </h2>
+            <p class="text-gray-400 max-w-2xl">
+              Add relevant tags to help others discover your group. Select tags
+              that best describe your group's subject and focus.
+            </p>
+          </div>
+          <div class="group-badge px-4 py-2 rounded-lg">
+            <span class="text-indigo-300 font-medium">{{ group.name }}</span>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-indigo-300">Selected Tags</h3>
+            <span class="text-xs text-gray-500">
+              {{ group.tags|length if group.tags else 0 }} selected
+            </span>
+          </div>
+          <div id="selected-tags" class="flex flex-wrap gap-2 min-h-10">
+            {% if group.tags %} {% for tag in group.tags %}
+            <span
+              class="tag-pill text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center"
+            >
+              {{ tag.tag_name }}
+              <button
+                onclick="removeTag({{ group.group_id }}, {{ tag.tagid }})"
+                class="ml-2 text-gray-400 hover:text-white transition"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </span>
+            {% endfor %} {% else %}
+            <p class="text-gray-500 italic">No tags selected yet</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-indigo-300">
+              Available Tags
+            </h3>
+            <span class="text-xs text-gray-500">
+              {{ tags|length }} available
+            </span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {% for tag in tags %}
+            <button
+              onclick="toggleTag({{ group.group_id }}, {{ tag.tagid }})"
+              class="tag-card px-4 py-3 rounded-lg text-center transition {% if tag in group.tags %} selected {% endif %}"
+              id="tag-{{ tag.tagid }}"
+            >
+              <i class="fas fa-tag text-indigo-400 mr-2"></i>
+              <span class="font-medium">{{ tag.tag_name }}</span>
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <a
+          href="{{ url_for('home') }}"
+          class="btn-primary text-white px-6 py-3 rounded-lg font-medium shadow-lg"
+        >
+          Finish Tagging <i class="fas fa-check ml-2"></i>
+        </a>
+      </div>
+    </main>
+
+    <!-- Keep the original JavaScript unchanged -->
+    <script>
+      async function toggleTag(groupId, tagId) {
+        const tagElement = document.getElementById(`tag-${tagId}`);
+        const selectedTagsContainer = document.getElementById("selected-tags");
+
+        try {
+          const response = await fetch(`/add_tag/${groupId}/${tagId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await response.json();
+
+          if (result.status === "success") {
+            if (result.action === "added") {
+              tagElement.classList.add("selected");
+              // Add to selected tags display
+              const newTag = document.createElement("span");
+              newTag.className =
+                "tag-pill text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center";
+              newTag.innerHTML = `
+                ${result.tag_name}
+                <button onclick="removeTag(${groupId}, ${tagId})" class="ml-2 text-gray-400 hover:text-white transition">
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              `;
+              selectedTagsContainer.appendChild(newTag);
+
+              // Remove "no tags" message if present
+              const noTagsMsg = selectedTagsContainer.querySelector("p");
+              if (noTagsMsg) {
+                noTagsMsg.remove();
+              }
+            } else {
+              tagElement.classList.remove("selected");
+              // Remove from selected tags display
+              const tagToRemove = Array.from(
+                selectedTagsContainer.querySelectorAll("span")
+              ).find((span) => span.textContent.includes(result.tag_name));
+              if (tagToRemove) {
+                tagToRemove.remove();
+              }
+
+              // Add "no tags" message if no tags left
+              if (selectedTagsContainer.children.length === 0) {
+                const noTagsMsg = document.createElement("p");
+                noTagsMsg.className = "text-gray-500 italic";
+                noTagsMsg.textContent = "No tags selected yet";
+                selectedTagsContainer.appendChild(noTagsMsg);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+
+      async function removeTag(groupId, tagId) {
+        // This just triggers the same toggle function
+        await toggleTag(groupId, tagId);
+      }
+    </script>
+  </body>
+</html>

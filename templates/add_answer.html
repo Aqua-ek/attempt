@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Answer Question | Clack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --dark-bg: #0f172a;
+        --darker-bg: #0b1120;
+        --upvote: #10b981; /* Green */
+        --downvote: #ef4444; /* Red */
+      }
+
+      body {
+        background: var(--darker-bg);
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+      }
+
+      .content-card {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(56, 70, 112, 0.3);
+      }
+
+      .answer-card {
+        background: rgba(30, 41, 59, 0.5);
+        border-left: 4px solid rgba(55, 65, 81, 0.5);
+        transition: all 0.3s ease;
+      }
+
+      .answer-card:hover {
+        border-left-color: var(--primary);
+      }
+
+      /* Voting button styles */
+      .vote-button {
+        transition: all 0.2s ease;
+        color: #9ca3af; /* Default gray */
+      }
+
+      .vote-button:hover {
+        color: var(--primary); /* Purple on hover */
+      }
+
+      /* Active vote states */
+      .has-upvoted {
+        color: var(--upvote) !important; /* Green for upvote */
+      }
+
+      .has-upvoted:hover {
+        color: #059669 !important; /* Darker green on hover */
+      }
+
+      .has-downvoted {
+        color: var(--downvote) !important; /* Red for downvote */
+      }
+
+      .has-downvoted:hover {
+        color: #dc2626 !important; /* Darker red on hover */
+      }
+
+      .input-field {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(55, 65, 81, 0.8);
+        transition: all 0.3s ease;
+      }
+
+      .input-field:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      }
+
+      .highlight {
+        animation: highlight 1.5s ease-out;
+      }
+
+      @keyframes highlight {
+        0% {
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
+        }
+        100% {
+          box-shadow: none;
+        }
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        color: white;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .vote-count {
+        transition: all 0.2s ease;
+        min-width: 24px;
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+
+      .tag {
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-right: 6px;
+        margin-bottom: 6px;
+      }
+
+      .markdown-content a {
+        color: #818cf8;
+        text-decoration: underline;
+      }
+
+      .markdown-content pre {
+        background: rgba(30, 41, 59, 0.8);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+
+      .markdown-content code {
+        background: rgba(30, 41, 59, 0.8);
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+      }
+
+      .vote-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-right: 1rem;
+      }
+
+      .answer-content {
+        flex-grow: 1;
+        padding: 0.5rem 0;
+      }
+
+      .answer-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .answer-footer {
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.5rem;
+      }
+
+      .answer-footer button {
+        margin-right: 1rem;
+        padding: 0.25rem 0;
+      }
+
+      .answer-footer button:hover {
+        color: var(--primary);
+      }
+
+      .compact-editor {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(55, 65, 81, 0.8);
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .compact-editor textarea {
+        background: transparent;
+        border: none;
+        width: 100%;
+        color: white;
+        resize: vertical;
+        min-height: 80px;
+        outline: none;
+      }
+
+      .compact-editor-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+      }
+
+      .compact-submit-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0.25rem 0.75rem;
+        cursor: pointer;
+      }
+
+      .question-vote-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-right: 1rem;
+      }
+
+      .question-content {
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+  <body class="text-gray-200 min-h-screen">
+    <!-- Navigation -->
+    <header
+      class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10"
+    >
+      <div
+        class="container mx-auto px-4 py-3 flex items-center justify-between"
+      >
+        <a
+          href="{{ url_for('home') }}"
+          class="text-xl font-semibold text-indigo-300 flex items-center gap-2 hover:text-indigo-200 transition-colors"
+        >
+          <i class="fas fa-comments"></i>
+          Clack
+        </a>
+        <nav class="flex items-center space-x-4">
+          {% if current_user.is_authenticated %}
+          <a
+            href="{{ url_for('user') }}"
+            class="flex items-center text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            <div class="user-avatar text-sm mr-2">
+              {{ current_user.name[0].upper() }}{{ current_user.name[1].upper()
+              if current_user.name|length > 1 else '' }}
+            </div>
+            {{ current_user.name }}
+          </a>
+          <a
+            href="{{ url_for('logout') }}"
+            class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
+          >
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </a>
+          {% else %}
+          <a
+            href="{{ url_for('login') }}"
+            class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
+          >
+            <i class="fas fa-sign-in-alt mr-1"></i> Login
+          </a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-4 max-w-5xl">
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div id="flash-container" class="mb-6 space-y-3">
+        {% for category, message in messages %}
+        <div
+          class="flex items-start justify-between p-3 rounded-lg {% if category == 'success' %} bg-green-900/50 border border-green-800 text-green-200 {% elif category == 'error' or category == 'danger' %} bg-red-900/50 border border-red-800 text-red-200 {% else %} bg-blue-900/50 border border-blue-800 text-blue-200 {% endif %}"
+        >
+          <div class="text-sm flex items-center">
+            <i
+              class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' or category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"
+            ></i>
+            {{ message }}
+          </div>
+          <button
+            class="ml-4 text-sm opacity-70 hover:opacity-100 close-flash transition-opacity"
+            aria-label="close"
+          >
+            &times;
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Question Section -->
+      <div class="content-card rounded-lg p-4 mb-4">
+        <div class="flex">
+          <!-- Question voting -->
+          <div class="question-vote-section">
+            <button
+              class="vote-button {% if question_has_upvoted %}has-upvoted{% endif %}"
+              onclick="voteQuestion('{{ question.qstid }}', 'up')"
+              id="upvote-question"
+            >
+              <i class="fas fa-arrow-up"></i>
+            </button>
+            <span class="vote-count text-gray-300" id="vote-count-question">
+              {{ question_vote_count }}
+            </span>
+            <button
+              class="vote-button {% if question_has_downvoted %}has-downvoted{% endif %}"
+              onclick="voteQuestion('{{ question.qstid }}', 'down')"
+              id="downvote-question"
+            >
+              <i class="fas fa-arrow-down"></i>
+            </button>
+          </div>
+
+          <div class="question-content">
+            <div class="mb-2">
+              <h1 class="text-xl font-bold text-white leading-tight mb-1">
+                {{ question.qsttitle }}
+              </h1>
+
+              <div class="flex items-center text-xs text-gray-400 mb-2">
+                <span class="mr-2">
+                  Asked by
+                  <a
+                    href="{{ url_for('other_status', user_name=question.sender.name) if question.sender else '#' }}"
+                    class="text-indigo-300 hover:underline"
+                  >
+                    {{ question.sender.name if question.sender else 'Unknown' }}
+                  </a>
+                </span>
+                <span class="mr-2">
+                  {{ question.qsttime.strftime('%b %d, %Y at %H:%M') if
+                  question.qsttime else '' }}
+                </span>
+                {% if question.group %}
+                <a
+                  href="{{ url_for('group_questions', group_name=question.group.name) }}"
+                  class="text-indigo-300 hover:underline"
+                >
+                  <i class="fas fa-users mr-1"></i>{{ question.group.name }}
+                </a>
+                {% endif %}
+              </div>
+
+              <!-- Tags -->
+              <div class="mb-3 flex flex-wrap">
+                {% if question.tags %} {% for tag in question.tags.split(',') %}
+                <span class="tag">
+                  <i class="fas fa-tag mr-1"></i>{{ tag.strip() }}
+                </span>
+                {% endfor %} {% endif %}
+              </div>
+            </div>
+
+            <div
+              class="markdown-content text-gray-300 mb-4 whitespace-pre-wrap"
+            >
+              {{ question.qstcontent }}
+            </div>
+
+            <div
+              class="flex items-center text-sm text-gray-400 border-t border-gray-800 pt-3"
+            >
+              <button class="flex items-center mr-4 hover:text-indigo-300">
+                <i class="far fa-comment mr-1"></i>
+                {{ question.answers|length }} answers
+              </button>
+              <button class="flex items-center mr-4 hover:text-indigo-300">
+                <i class="far fa-bookmark mr-1"></i> Save
+              </button>
+              <button class="flex items-center mr-4 hover:text-indigo-300">
+                <i class="fas fa-share-alt mr-1"></i> Share
+              </button>
+              {% if current_user.is_authenticated and current_user.id ==
+              question.sender.id %}
+              <button class="flex items-center mr-4 hover:text-indigo-300">
+                <i class="fas fa-edit mr-1"></i> Edit
+              </button>
+              <button class="flex items-center hover:text-red-400">
+                <i class="fas fa-trash-alt mr-1"></i> Delete
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Form (Compact) -->
+      {% if current_user.is_authenticated %}
+      <div class="content-card rounded-lg p-4 mb-4">
+        <form method="POST" action="" autocomplete="off">
+          {{ form.hidden_tag() }}
+          <div class="compact-editor">
+            <textarea
+              id="answer-editor"
+              name="answerbody"
+              placeholder="What are your thoughts?"
+              class="w-full"
+              rows="3"
+            ></textarea>
+            <div class="compact-editor-footer">
+              <div class="text-xs text-gray-500 flex items-center">
+                <i class="fas fa-info-circle mr-1"></i> Markdown supported
+              </div>
+              <button type="submit" class="compact-submit-btn">
+                Post Answer
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Answers Section -->
+      <div class="content-card rounded-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-indigo-300">
+            {{ answers|length }} Answers
+          </h2>
+          <div class="text-sm text-gray-400 flex items-center">
+            Sorted by:
+            <select
+              class="bg-gray-800/50 text-gray-200 border border-gray-700 rounded px-2 py-1 ml-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+              id="sort-answers"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="votes">Top</option>
+            </select>
+          </div>
+        </div>
+
+        {% if answer_hold %}
+        <div class="space-y-3" id="answers-list">
+          {% for answer_data in answer_hold %} {% set answer =
+          answer_data.answer %} {% set net_count = answer_data.net_count %} {%
+          set has_upvoted = answer_data.has_upvoted %} {% set has_downvoted =
+          answer_data.has_downvoted %}
+          <div
+            class="answer-card rounded p-3 {% if loop.first %}highlight{% endif %}"
+            id="answer-{{ answer.answid }}"
+            data-time="{{ answer.anstime.timestamp() if answer.anstime else '' }}"
+            data-votes="{{ net_count }}"
+          >
+            <div class="flex">
+              <!-- Answer voting -->
+              <div class="vote-section">
+                <button
+                  class="vote-button {% if has_upvoted %}has-upvoted{% endif %}"
+                  onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'up')"
+                  id="upvote-{{ answer.answid }}"
+                >
+                  <i class="fas fa-arrow-up"></i>
+                </button>
+                <span
+                  class="vote-count text-gray-300"
+                  id="vote-count-{{ answer.answid }}"
+                >
+                  {{ net_count }}
+                </span>
+                <button
+                  class="vote-button {% if has_downvoted %}has-downvoted{% endif %}"
+                  onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'down')"
+                  id="downvote-{{ answer.answid }}"
+                >
+                  <i class="fas fa-arrow-down"></i>
+                </button>
+              </div>
+
+              <div class="answer-content">
+                <!-- Answer header -->
+                <div class="answer-header">
+                  <a
+                    href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
+                    class="flex-shrink-0 mr-2"
+                  >
+                    <div class="user-avatar text-xs">
+                      {{ answer.sender.name[0].upper() if answer.sender else '?'
+                      }}{{ answer.sender.name[1].upper() if answer.sender and
+                      answer.sender.name|length > 1 else '' }}
+                    </div>
+                  </a>
+                  <div>
+                    <a
+                      href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
+                      class="text-sm font-medium text-indigo-300 hover:underline"
+                    >
+                      {{ answer.sender.name if answer.sender else 'Unknown' }}
+                    </a>
+                    <span class="text-xs text-gray-400 ml-2">
+                      <span
+                        class="time-ago"
+                        data-time="{{ answer.anstime.isoformat() }}"
+                      >
+                        {{ answer.anstime.strftime('%b %d, %Y at %H:%M') }}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Answer content -->
+                <div class="markdown-content text-gray-300 text-sm">
+                  {{ answer.anscontent }}
+                </div>
+
+                <!-- Answer footer -->
+                <div class="answer-footer">
+                  <button class="hover:text-indigo-300">
+                    <i class="fas fa-reply mr-1"></i> Reply
+                  </button>
+                  <button class="hover:text-indigo-300">
+                    <i class="fas fa-share-alt mr-1"></i> Share
+                  </button>
+                  <button class="hover:text-indigo-300">
+                    <i class="far fa-bookmark mr-1"></i> Save
+                  </button>
+                  {% if current_user.is_authenticated and current_user.id ==
+                  answer.sender.id %}
+                  <button class="hover:text-indigo-300">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <button class="hover:text-red-400">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                  </button>
+                  {% endif %}
+                  <button class="hover:text-indigo-300">
+                    <i class="fas fa-flag mr-1"></i> Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div
+          class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl hover:border-indigo-500/30 transition-colors"
+        >
+          <i class="fas fa-comment-slash text-4xl mb-3 text-indigo-400/50"></i>
+          <h3 class="text-lg font-medium text-gray-400 mb-1">No answers yet</h3>
+          <p class="text-sm mb-4">Be the first to share what you know!</p>
+          {% if current_user.is_authenticated %}
+          <button
+            onclick="document.getElementById('answer-editor').focus()"
+            class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-500 transition-colors"
+          >
+            <i class="fas fa-pen-alt mr-1"></i> Write Answer
+          </button>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="text-center text-xs text-gray-500 py-6 border-t border-gray-800/50 mt-8"
+    >
+      <div class="container mx-auto px-4">
+        <div
+          class="flex flex-col md:flex-row justify-center items-center gap-4"
+        >
+          <div>&copy; 2025 Clack · Learn. Connect. Elevate.</div>
+          <div class="flex space-x-4">
+            <a href="#" class="hover:text-indigo-300 transition-colors"
+              >Terms</a
+            >
+            <a href="#" class="hover:text-indigo-300 transition-colors"
+              >Privacy</a
+            >
+            <a href="#" class="hover:text-indigo-300 transition-colors">Help</a>
+            <a href="#" class="hover:text-indigo-300 transition-colors"
+              >About</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Close flash messages
+      document.querySelectorAll(".close-flash").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const parent = e.target.closest('div[role="presentation"], .flex');
+          if (parent) parent.remove();
+        });
+      });
+
+      // Auto-scroll to the newest answer
+      (function () {
+        const latest = document.querySelector(".highlight");
+        if (latest) {
+          setTimeout(() => {
+            latest.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 150);
+        }
+      })();
+
+      // Vote for the question
+      async function voteQuestion(questionId, direction) {
+        if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+          alert("Please login to vote");
+          return;
+        }
+
+        try {
+          const endpoint = `/upvote/${questionId}`;
+          const method = direction === 'up' ? 'POST' : 'POST';
+          const url = direction === 'up'
+            ? `/upvote/${questionId}`
+            : `/downvote/${questionId}`;
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const data = await response.json();
+          console.log("Vote response:", data);
+
+          // Update the vote count display
+          const voteCountElement = document.getElementById('vote-count-question');
+          if (voteCountElement) {
+            voteCountElement.textContent = data.net_count;
+          }
+
+          // Get buttons
+          const upButton = document.getElementById('upvote-question');
+          const downButton = document.getElementById('downvote-question');
+
+          // Reset both buttons first
+          upButton.classList.remove('has-upvoted', 'has-downvoted');
+          downButton.classList.remove('has-upvoted', 'has-downvoted');
+
+          // Set new states
+          if (data.has_upvoted) {
+            upButton.classList.add('has-upvoted');
+          } else if (data.has_downvoted) {
+            downButton.classList.add('has-downvoted');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error processing your vote. Please try again.');
+        }
+      }
+
+      // Vote for an answer
+      async function voteAnswer(questionId, answerId, direction) {
+        if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+          alert("Please login to vote");
+          return;
+        }
+
+        try {
+          const url = direction === 'up'
+            ? `/upvote/${questionId}/${answerId}`
+            : `/downvote/${questionId}/${answerId}`;
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const data = await response.json();
+          console.log("Vote response:", data);
+
+          // Update the vote count display
+          const voteCountElement = document.getElementById(`vote-count-${answerId}`);
+          if (voteCountElement) {
+            voteCountElement.textContent = data.net_count;
+          }
+
+          // Get buttons
+          const upButton = document.getElementById(`upvote-${answerId}`);
+          const downButton = document.getElementById(`downvote-${answerId}`);
+
+          // Reset both buttons first
+          upButton.classList.remove('has-upvoted', 'has-downvoted');
+          downButton.classList.remove('has-upvoted', 'has-downvoted');
+
+          // Set new states
+          if (data.has_upvoted) {
+            upButton.classList.add('has-upvoted');
+          } else if (data.has_downvoted) {
+            downButton.classList.add('has-downvoted');
+          }
+
+          // Update the data-votes attribute for sorting
+          document.getElementById(`answer-${answerId}`).dataset.votes = data.net_count;
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error processing your vote. Please try again.');
+        }
+      }
+
+      // Sort answers
+      document.getElementById("sort-answers").addEventListener("change", function() {
+        const sortBy = this.value;
+        const answersContainer = document.getElementById("answers-list");
+        const answers = Array.from(answersContainer.children);
+
+        answers.sort((a, b) => {
+          if (sortBy === "newest") {
+            return parseFloat(b.dataset.time) - parseFloat(a.dataset.time);
+          } else if (sortBy === "oldest") {
+            return parseFloat(a.dataset.time) - parseFloat(b.dataset.time);
+          } else if (sortBy === "votes") {
+            return parseInt(b.dataset.votes) - parseInt(a.dataset.votes);
+          }
+          return 0;
+        });
+
+        // Clear and re-append sorted answers
+        answersContainer.innerHTML = "";
+        answers.forEach(answer => answersContainer.appendChild(answer));
+      });
+
+      // Time ago calculation
+      function updateTimeAgo() {
+        document.querySelectorAll('.time-ago').forEach(element => {
+          const timeString = element.dataset.time;
+          if (!timeString) return;
+
+          const time = new Date(timeString);
+          const now = new Date();
+          const diffInSeconds = Math.floor((now - time) / 1000);
+
+          let text;
+          if (diffInSeconds < 60) {
+            text = "just now";
+          } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            text = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+          } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            text = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+          } else if (diffInSeconds < 2592000) {
+            const days = Math.floor(diffInSeconds / 86400);
+            text = `${days} day${days !== 1 ? 's' : ''} ago`;
+          } else {
+            const months = Math.floor(diffInSeconds / 2592000);
+            text = `${months} month${months !== 1 ? 's' : ''} ago`;
+          }
+
+          element.textContent = text;
+        });
+      }
+
+      // Initialize time ago and update every minute
+      updateTimeAgo();
+      setInterval(updateTimeAgo, 60000);
+    </script>
+  </body>
+</html>

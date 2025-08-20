@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clack | Learn. Connect. Elevate.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(to bottom right, #0f172a, #1e293b);
+        scroll-behavior: smooth;
+        font-family: "Inter", sans-serif;
+      }
+
+      .feature-card {
+        transition: all 0.3s ease;
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      .feature-card.visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .gradient-text {
+        background: linear-gradient(90deg, #818cf8, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-gradient {
+        background: radial-gradient(
+          circle at 70% 30%,
+          rgba(79, 70, 229, 0.15),
+          transparent 60%
+        );
+      }
+
+      .scroll-down {
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-20px);
+        }
+        60% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .sidebar {
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .backdrop-blur {
+        backdrop-filter: blur(5px);
+      }
+
+      .hero-pattern {
+        background-image: radial-gradient(
+          circle at 25% 50%,
+          rgba(129, 140, 248, 0.1) 0%,
+          transparent 50%
+        );
+      }
+
+      .card-glass {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .gradient-border {
+        position: relative;
+      }
+
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 0.75rem;
+        padding: 1px;
+        background: linear-gradient(45deg, #818cf8, #c7d2fe);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: minmax(100px, auto);
+        gap: 1rem;
+      }
+
+      @media (max-width: 768px) {
+        .bento-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .bento-card {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .bento-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card-1 {
+        grid-column: span 1;
+        grid-row: span 1;
+        background: rgba(79, 70, 229, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+      }
+
+      .card-2 {
+        grid-column: span 1;
+        grid-row: span 1;
+        background: rgba(124, 58, 237, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+      }
+
+      .card-3 {
+        grid-column: span 1;
+        grid-row: span 1;
+        background: rgba(49, 46, 129, 0.1);
+        border: 1px solid rgba(67, 56, 202, 0.2);
+      }
+
+      .card-4 {
+        grid-column: span 2;
+        grid-row: span 1;
+        background: rgba(109, 40, 217, 0.1);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+      }
+
+      .card-5 {
+        grid-column: span 1;
+        grid-row: span 1;
+        background: rgba(91, 33, 182, 0.1);
+        border: 1px solid rgba(109, 40, 217, 0.2);
+      }
+
+      .card-6 {
+        grid-column: span 1;
+        grid-row: span 1;
+        background: rgba(76, 29, 149, 0.1);
+        border: 1px solid rgba(91, 33, 182, 0.2);
+      }
+
+      .card-icon {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #c7d2fe;
+      }
+
+      .sidebar-link {
+        transition: all 0.2s ease;
+      }
+
+      .sidebar-link:hover {
+        background: rgba(79, 70, 229, 0.2);
+      }
+
+      .sidebar-link.active {
+        background: rgba(79, 70, 229, 0.3);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+
+      /* New styles for improved sections */
+      .animate-spin-slow {
+        animation: spin 15s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .transform {
+        transition: transform 0.3s ease;
+      }
+
+      .hover-scale-105:hover {
+        transform: scale(1.05);
+      }
+
+      .step-connector {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(99, 102, 241, 0.3);
+        transform: translateY(-50%);
+        z-index: 0;
+      }
+
+      .step-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #818cf8;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    </style>
+  </head>
+
+  <body class="text-gray-200">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div
+      id="flash-container"
+      class="fixed top-4 left-0 right-0 z-50 flex justify-center"
+    >
+      <div class="w-full max-w-md mx-4">
+        {% for category, message in messages %}
+        <div
+          class="flash-message p-4 mb-3 rounded-lg shadow-lg text-white {% if category == 'error' %} bg-red-600 {% elif category == 'success' %} bg-green-600 {% else %} bg-blue-600 {% endif %} animate__animated animate__fadeInDown"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <script>
+      setTimeout(() => {
+        const flashContainer = document.getElementById("flash-container");
+        if (flashContainer) {
+          flashContainer.style.transition = "opacity 0.5s ease";
+          flashContainer.style.opacity = "0";
+          setTimeout(() => flashContainer.remove(), 500);
+        }
+      }, 5000);
+    </script>
+    {% endif %} {% endwith %}
+
+    <div class="flex min-h-screen relative">
+      <!-- Mobile overlay -->
+      <div
+        id="mobile-overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"
+        onclick="toggleSidebar()"
+      ></div>
+
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="sidebar bg-gray-900 w-64 space-y-6 py-7 px-4 fixed inset-y-0 left-0 z-50 border-r border-gray-800 md:relative md:translate-x-0"
+      >
+        <div class="flex items-center space-x-2 px-2">
+          <i class="fas fa-book-open text-2xl text-indigo-400"></i>
+          <h1 class="text-2xl font-bold gradient-text">Clack</h1>
+        </div>
+        <nav class="flex flex-col space-y-2 mt-8 text-lg">
+          <a
+            href="#"
+            class="sidebar-link flex items-center space-x-3 px-3 py-3 rounded-lg text-indigo-300 border border-indigo-800 active"
+          >
+            <i class="fas fa-home text-xl"></i>
+            <span>Home</span>
+          </a>
+          <a
+            href="{{url_for('show_groups')}}"
+            class="sidebar-link flex items-center space-x-3 px-3 py-3 rounded-lg text-gray-300 hover:text-indigo-300"
+          >
+            <i class="fas fa-users text-xl"></i>
+            <span>Discover Groups</span>
+          </a>
+          <a
+            href="{{url_for('my_group')}}"
+            class="sidebar-link flex items-center space-x-3 px-3 py-3 rounded-lg text-gray-300 hover:text-indigo-300"
+          >
+            <i class="fas fa-layer-group text-xl"></i>
+            <span>Your Groups</span>
+          </a>
+          <a
+            href="{{url_for('login')}}"
+            class="sidebar-link flex items-center space-x-3 px-3 py-3 rounded-lg text-gray-300 hover:text-indigo-300"
+          >
+            <i class="fas fa-lock text-xl"></i>
+            <span>Login</span>
+          </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-0 right-0 px-4">
+          <a
+            href="{{url_for('signup')}}"
+            class="block w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg text-center transition duration-200 font-medium shadow-md hover:shadow-indigo-500/30"
+          >
+            Get Started
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-y-auto" id="main-content">
+        <!-- Mobile Nav -->
+        <header
+          class="bg-gray-800 bg-opacity-90 p-4 flex items-center justify-between md:hidden sticky top-0 z-40 border-b border-gray-700 backdrop-blur"
+        >
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-book-open text-xl text-indigo-400"></i>
+            <h1 class="text-xl font-semibold gradient-text">Clack</h1>
+          </div>
+          <button
+            onclick="toggleSidebar()"
+            class="text-gray-300 hover:text-indigo-300 p-1 rounded-md hover:bg-gray-700 transition"
+            aria-label="Toggle menu"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </header>
+
+        <!-- Hero -->
+        <section
+          class="relative overflow-hidden min-h-screen flex items-center hero-pattern"
+        >
+          <div class="absolute inset-0 z-0 opacity-20">
+            <div
+              class="absolute top-0 right-0 w-64 h-64 rounded-full bg-indigo-900 filter blur-3xl opacity-20"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-purple-900 filter blur-3xl opacity-20"
+            ></div>
+          </div>
+
+          <div class="max-w-7xl mx-auto px-6 py-24 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div class="animate__animated animate__fadeIn">
+                <div
+                  class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-900 bg-opacity-30 border border-indigo-800 mb-6"
+                >
+                  <i class="fas fa-bolt text-yellow-400 mr-2"></i>
+                  <span class="text-indigo-300"
+                    >New: Collaborative Learning Platform</span
+                  >
+                </div>
+
+                <h1
+                  class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight"
+                >
+                  <span class="gradient-text block">Collaborative</span>
+                  <span class="gradient-text block">Learning</span>
+                  <span class="gradient-text block">Reimagined</span>
+                </h1>
+
+                <p
+                  class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl leading-relaxed"
+                >
+                  Clack connects students worldwide to learn together through
+                  subject-based communities, interactive tools, and AI-powered
+                  collaboration.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                  <a
+                    href="{{url_for('signup')}}"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl text-lg font-medium transition duration-200 shadow-lg hover:shadow-indigo-500/20"
+                  >
+                    Join for Free
+                  </a>
+                  <a
+                    href="#features"
+                    class="border border-indigo-500 text-indigo-300 hover:bg-indigo-900 hover:bg-opacity-30 px-8 py-4 rounded-xl text-lg font-medium transition duration-200 flex items-center gap-2"
+                  >
+                    <i class="fas fa-play"></i>
+                    See How It Works
+                  </a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <div class="flex -space-x-3">
+                    <img
+                      src="https://randomuser.me/api/portraits/women/44.jpg"
+                      class="w-10 h-10 rounded-full border-2 border-gray-800"
+                      alt="User"
+                    />
+                    <img
+                      src="https://randomuser.me/api/portraits/men/32.jpg"
+                      class="w-10 h-10 rounded-full border-2 border-gray-800"
+                      alt="User"
+                    />
+                    <img
+                      src="https://randomuser.me/api/portraits/women/68.jpg"
+                      class="w-10 h-10 rounded-full border-2 border-gray-800"
+                      alt="User"
+                    />
+                  </div>
+                  <p class="text-gray-400">
+                    <span class="text-indigo-300 font-medium">10,000+</span>
+                    students collaborating daily
+                  </p>
+                </div>
+              </div>
+
+              <div class="relative hidden lg:block">
+                <div class="card-glass p-1 rounded-2xl gradient-border">
+                  <div
+                    class="bg-gray-900 rounded-xl p-6 h-full overflow-hidden"
+                  >
+                    <div class="flex items-center justify-between mb-6">
+                      <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                      </div>
+                      <span class="text-sm text-gray-500"
+                        >Linear Algebra Group</span
+                      >
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                      <div class="flex items-start gap-3">
+                        <img
+                          src="https://randomuser.me/api/portraits/women/44.jpg"
+                          class="w-8 h-8 rounded-full mt-1"
+                          alt="User"
+                        />
+                        <div>
+                          <div class="bg-gray-800 rounded-lg p-3">
+                            <p class="text-sm">
+                              Has anyone solved problem 3.2 from chapter 5? I'm
+                              stuck on the eigenvalue part.
+                            </p>
+                          </div>
+                          <p class="text-xs text-gray-500 mt-1">
+                            Maria - 2 min ago
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-start gap-3">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/32.jpg"
+                          class="w-8 h-8 rounded-full mt-1"
+                          alt="User"
+                        />
+                        <div>
+                          <div
+                            class="bg-indigo-900 bg-opacity-30 rounded-lg p-3"
+                          >
+                            <p class="text-sm">
+                              I just uploaded my solution to the Answer's Page
+                            </p>
+                          </div>
+                          <p class="text-xs text-gray-500 mt-1">
+                            Alex - Just now
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bg-gray-800 rounded-lg p-3 flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Type your message..."
+                        class="bg-transparent flex-1 text-sm focus:outline-none"
+                      />
+                      <button class="text-indigo-400 hover:text-indigo-300">
+                        <i class="fas fa-paper-plane"></i>
+                      </button>
+                    </div>
+
+                    <div
+                      class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-900 to-transparent"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="absolute bottom-10 left-0 right-0 flex justify-center scroll-down"
+          >
+            <a
+              href="#features"
+              class="text-gray-400 hover:text-indigo-300 transition"
+            >
+              <i class="fas fa-chevron-down text-2xl"></i>
+            </a>
+          </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="py-16 bg-gray-900 bg-opacity-30">
+          <div
+            class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6"
+          >
+            <div
+              class="text-center p-6 rounded-xl bg-gray-800 bg-opacity-50 border border-gray-700 hover:border-indigo-500 transition"
+            >
+              <div class="text-4xl font-bold text-indigo-300 mb-2">10K+</div>
+              <div class="text-gray-400">Active Learners</div>
+            </div>
+            <div
+              class="text-center p-6 rounded-xl bg-gray-800 bg-opacity-50 border border-gray-700 hover:border-indigo-500 transition"
+            >
+              <div class="text-4xl font-bold text-indigo-300 mb-2">500+</div>
+              <div class="text-gray-400">Study Groups</div>
+            </div>
+            <div
+              class="text-center p-6 rounded-xl bg-gray-800 bg-opacity-50 border border-gray-700 hover:border-indigo-500 transition"
+            >
+              <div class="text-4xl font-bold text-indigo-300 mb-2">50+</div>
+              <div class="text-gray-400">Subjects</div>
+            </div>
+            <div
+              class="text-center p-6 rounded-xl bg-gray-800 bg-opacity-50 border border-gray-700 hover:border-indigo-500 transition"
+            >
+              <div class="text-4xl font-bold text-indigo-300 mb-2">24/7</div>
+              <div class="text-gray-400">Support</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features" class="py-20 px-6 bg-gray-900 bg-opacity-10">
+          <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+              <h2 class="text-3xl md:text-4xl font-bold text-indigo-300 mb-4">
+                Powerful Learning Features
+              </h2>
+              <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                Everything you need to collaborate effectively and make learning
+                enjoyable
+              </p>
+            </div>
+
+            <div class="bento-grid">
+              <div class="bento-card feature-card card-1">
+                <div class="card-icon">
+                  <i class="fas fa-globe"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Global Groups
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Connect with learners worldwide by subject, not institution.
+                </p>
+              </div>
+
+              <div class="bento-card feature-card card-2">
+                <div class="card-icon">
+                  <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  AI Moderation
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Maintains productive, academic-focused discussions
+                  automatically.
+                </p>
+              </div>
+
+              <div class="bento-card feature-card card-3">
+                <div class="card-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Gamified Learning
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Earn points and track progress on subject leaderboards.
+                </p>
+              </div>
+
+              <div class="bento-card feature-card card-4">
+                <div class="card-icon">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Study Scheduling
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Coordinate sessions across timezones with built-in tools.
+                </p>
+              </div>
+
+              <div class="bento-card feature-card card-5">
+                <div class="card-icon">
+                  <i class="fas fa-share-alt"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Resource Sharing
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Share notes and study materials with your group easily.
+                </p>
+              </div>
+
+              <div class="bento-card feature-card card-6">
+                <div class="card-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Progress Tracking
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  Visualize your learning journey with personalized analytics.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- How It Works - Improved Section -->
+        <section
+          class="py-20 px-6 bg-gray-900 bg-opacity-30 relative overflow-hidden"
+        >
+          <!-- Background elements -->
+          <div class="absolute inset-0 z-0 opacity-20">
+            <div
+              class="absolute top-0 right-0 w-64 h-64 rounded-full bg-indigo-900 filter blur-3xl opacity-20"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-purple-900 filter blur-3xl opacity-20"
+            ></div>
+          </div>
+
+          <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center mb-16">
+              <h2
+                class="text-3xl md:text-4xl font-bold text-indigo-300 mb-4 animate__animated animate__fadeIn"
+              >
+                How Clack Works
+              </h2>
+              <p
+                class="text-gray-400 max-w-2xl mx-auto text-lg animate__animated animate__fadeIn animate__delay-1s"
+              >
+                Get started in just a few simple steps
+              </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+              <!-- Step 1 -->
+              <div class="text-center animate__animated animate__fadeInUp">
+                <div class="relative mx-auto mb-8">
+                  <div
+                    class="w-24 h-24 rounded-full bg-indigo-900 bg-opacity-20 flex items-center justify-center mx-auto text-3xl border border-indigo-700 hover:bg-opacity-30 transition hover-scale-105"
+                  >
+                    <i class="fas fa-user-plus text-indigo-400"></i>
+                  </div>
+                  <div
+                    class="absolute -inset-2 rounded-full border-2 border-dashed border-indigo-500 opacity-30 animate-spin-slow"
+                  ></div>
+                  <div
+                    class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-sm font-bold px-3 py-1 rounded-full"
+                  >
+                    Step 1
+                  </div>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Sign Up
+                </h3>
+                <p class="text-gray-400 text-sm max-w-xs mx-auto">
+                  Create your free account in under a minute. No credit card
+                  required.
+                </p>
+              </div>
+
+              <!-- Step 2 -->
+              <div
+                class="text-center animate__animated animate__fadeInUp animate__delay-1s"
+              >
+                <div class="relative mx-auto mb-8">
+                  <div
+                    class="w-24 h-24 rounded-full bg-indigo-900 bg-opacity-20 flex items-center justify-center mx-auto text-3xl border border-indigo-700 hover:bg-opacity-30 transition hover-scale-105"
+                  >
+                    <i class="fas fa-search text-indigo-400"></i>
+                  </div>
+                  <div
+                    class="absolute -inset-2 rounded-full border-2 border-dashed border-indigo-500 opacity-30 animate-spin-slow"
+                    style="animation-delay: 0.2s"
+                  ></div>
+                  <div
+                    class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-sm font-bold px-3 py-1 rounded-full"
+                  >
+                    Step 2
+                  </div>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Find Subjects
+                </h3>
+                <p class="text-gray-400 text-sm max-w-xs mx-auto">
+                  Browse or search for the courses you're studying or interested
+                  in.
+                </p>
+              </div>
+
+              <!-- Step 3 -->
+              <div
+                class="text-center animate__animated animate__fadeInUp animate__delay-2s"
+              >
+                <div class="relative mx-auto mb-8">
+                  <div
+                    class="w-24 h-24 rounded-full bg-indigo-900 bg-opacity-20 flex items-center justify-center mx-auto text-3xl border border-indigo-700 hover:bg-opacity-30 transition hover-scale-105"
+                  >
+                    <i class="fas fa-users text-indigo-400"></i>
+                  </div>
+                  <div
+                    class="absolute -inset-2 rounded-full border-2 border-dashed border-indigo-500 opacity-30 animate-spin-slow"
+                    style="animation-delay: 0.4s"
+                  ></div>
+                  <div
+                    class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-sm font-bold px-3 py-1 rounded-full"
+                  >
+                    Step 3
+                  </div>
+                </div>
+                <h3 class="text-xl font-semibold text-indigo-400 mb-3">
+                  Start Learning
+                </h3>
+                <p class="text-gray-400 text-sm max-w-xs mx-auto">
+                  Join discussions, share resources, and collaborate with peers.
+                </p>
+              </div>
+            </div>
+
+            <!-- Connecting line for steps (desktop only) -->
+            <div class="hidden md:block step-connector"></div>
+            <div
+              class="hidden md:flex justify-between absolute top-1/2 left-0 right-0 px-24 transform -translate-y-1/2 z-0"
+            >
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="py-28 px-6 relative overflow-hidden">
+          <div class="absolute inset-0 z-0">
+            <div
+              class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-900 to-purple-900 opacity-90"
+            ></div>
+            <div
+              class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"
+            ></div>
+          </div>
+
+          <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+              Ready to Transform Your Learning?
+            </h2>
+            <p class="text-gray-300 text-xl mb-10 max-w-2xl mx-auto">
+              Join thousands of students who are already learning smarter with
+              Clack
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="{{url_for('signup')}}"
+                class="bg-white hover:bg-gray-100 text-indigo-600 px-8 py-4 rounded-xl text-lg font-bold transition duration-200 shadow-lg hover:shadow-indigo-500/20"
+              >
+                Get Started - It's Free
+              </a>
+              <a
+                href="{{url_for('show_groups')}}"
+                class="bg-transparent border-2 border-white hover:bg-white hover:bg-opacity-10 text-white px-8 py-4 rounded-xl text-lg font-medium transition duration-200"
+              >
+                Browse Groups
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+          class="bg-gray-900 text-center py-12 px-6 border-t border-gray-800"
+        >
+          <div class="max-w-7xl mx-auto">
+            <div class="flex justify-center mb-8">
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-book-open text-2xl text-indigo-400"></i>
+                <h1 class="text-2xl font-bold gradient-text">Clack</h1>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 text-left">
+              <div>
+                <h4 class="text-indigo-300 font-medium mb-4">Product</h4>
+                <ul class="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Features</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{{url_for('show_groups')}}"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Groups</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Pricing</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="text-indigo-300 font-medium mb-4">Resources</h4>
+                <ul class="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Blog</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Help Center</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Tutorials</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="text-indigo-300 font-medium mb-4">Company</h4>
+                <ul class="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >About</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Careers</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Contact</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="text-indigo-300 font-medium mb-4">Legal</h4>
+                <ul class="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Privacy</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Terms</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="text-gray-400 hover:text-indigo-300 transition text-sm"
+                      >Cookie Policy</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="pt-8 border-t border-gray-800">
+              <p class="text-gray-500 text-sm">
+                &copy; 2025 Clack. Built for learners, by learners.
+              </p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      // Mobile menu state
+      let isSidebarOpen = false;
+
+      // Toggle sidebar function - Updated to fix scrolling issue
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("mobile-overlay");
+        const mainContent = document.getElementById("main-content");
+
+        isSidebarOpen = !isSidebarOpen;
+
+        if (isSidebarOpen) {
+          sidebar.classList.add("open");
+          overlay.classList.remove("hidden");
+          mainContent.style.overflow = "hidden"; // Only disable scrolling on main content
+        } else {
+          sidebar.classList.remove("open");
+          overlay.classList.add("hidden");
+          mainContent.style.overflow = ""; // Re-enable scrolling
+        }
+      }
+
+      // Close sidebar when clicking on a link (mobile)
+      document.querySelectorAll("#sidebar nav a").forEach((link) => {
+        link.addEventListener("click", () => {
+          if (window.innerWidth < 768) {
+            toggleSidebar();
+          }
+        });
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document
+        .getElementById("mobile-overlay")
+        .addEventListener("click", toggleSidebar);
+
+      // Animation for elements on scroll
+      function animateOnScroll() {
+        const featureCards = document.querySelectorAll(".feature-card");
+
+        const observerOptions = {
+          threshold: 0.1,
+          rootMargin: "0px 0px -50px 0px",
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, observerOptions);
+
+        featureCards.forEach((card) => observer.observe(card));
+      }
+
+      // Handle window resize
+      function handleResize() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("mobile-overlay");
+        const mainContent = document.getElementById("main-content");
+
+        if (window.innerWidth >= 768) {
+          // Desktop view
+          sidebar.classList.add("open");
+          overlay.classList.add("hidden");
+          mainContent.style.overflow = ""; // Ensure scrolling is enabled
+          isSidebarOpen = false;
+        } else {
+          // Mobile view - start with sidebar closed
+          sidebar.classList.remove("open");
+          isSidebarOpen = false;
+        }
+      }
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        animateOnScroll();
+        handleResize(); // Set initial state based on screen size
+
+        // Highlight active sidebar link
+        const currentPath = window.location.pathname;
+        const sidebarLinks = document.querySelectorAll(".sidebar-link");
+
+        sidebarLinks.forEach((link) => {
+          if (
+            link.getAttribute("href") === currentPath ||
+            (currentPath === "/" && link.getAttribute("href") === "#")
+          ) {
+            link.classList.add("active");
+          } else {
+            link.classList.remove("active");
+          }
+        });
+      });
+
+      // Add resize event listener
+      window.addEventListener("resize", handleResize);
+    </script>
+  </body>
+</html>
