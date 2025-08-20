@@ -517,7 +517,7 @@
                 <i class="fas fa-share-alt mr-1"></i> Share
               </button>
               {% if current_user.is_authenticated and current_user.id ==
-              question.sender.id %}
+              question.sender.id and not question.isdeleted %}
               <button class="flex items-center mr-4 hover:text-indigo-300">
                 <i class="fas fa-edit mr-1"></i> Edit
               </button>
@@ -664,7 +664,7 @@
                     <i class="far fa-bookmark mr-1"></i> Save
                   </button>
                   {% if current_user.is_authenticated and current_user.id ==
-                  answer.sender.id %}
+                  answer.sender.id and not question.isdeleted %}
                   <button class="hover:text-indigo-300">
                     <i class="fas fa-edit mr-1"></i> Edit
                   </button>
