@@ -65,14 +65,14 @@ def user():
 
 @app.route("/check/<user_name>", methods=["POST", "GET"])
 def other_status(user_name):
-    if current_user.is_authenticated == False:
-        return redirect("login")
-    session["username"] = current_user.name
+    # if current_user.is_authenticated == False:
+    #     return redirect("login")
+    # session["username"] = current_user.name
     user = Users.query.filter_by(name=user_name).first()
     msg_amt = len(user.messages)
     gp_amt = len(user.groups)
     qst_amt = len(user.questions)
-    my_groups = current_user.groups
+    my_groups = current_user.groups if current_user.is_authenticated else []
     other_groups = user.groups
     answ_num = len(user.questions)
 
@@ -263,10 +263,17 @@ def my_group():
 
 @app.route("/chat/<group_name>")
 def chat(group_name):
+
     group = Groups.query.filter_by(name=group_name).first()
     if not group or not group.isapproved:
         flash("Group does not exist")
         return redirect(url_for("home"))
+    if current_user.is_authenticated:
+        user_groups = current_user.groups
+    else:
+        user_groups = []
+
+    display_name = current_user.name if current_user.is_authenticated else "Anonymous"
 
     past_msg = (
         Messages.query.filter_by(groupid=group.group_id)
@@ -278,7 +285,8 @@ def chat(group_name):
         "chat.html",
         group=group,
         history=past_msg,
-        current_user_groups=current_user.groups,
+        current_user_groups=user_groups,
+        display_name=display_name
     )
 
 
