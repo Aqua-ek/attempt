@@ -92,6 +92,8 @@
           var(--primary-dark)
         );
         transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 10px 16px;
       }
       .btn-primary:hover {
         transform: translateY(-2px);
@@ -101,6 +103,8 @@
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid rgba(99, 102, 241, 0.3);
         transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 10px 16px;
       }
       .btn-secondary:hover {
         background: rgba(30, 41, 59, 1);
@@ -111,6 +115,7 @@
       .floating-action-btn {
         box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
         transition: all 0.3s ease;
+        border-radius: 50%;
       }
       .floating-action-btn:hover {
         transform: translateY(-3px) scale(1.05);
@@ -120,6 +125,7 @@
       /* Voting Styles */
       .vote-btn {
         transition: all 0.2s ease;
+        border-radius: 6px;
       }
       .vote-btn:hover {
         transform: scale(1.1);
@@ -152,6 +158,7 @@
       }
       .group-item {
         transition: all 0.2s ease;
+        border-radius: 8px;
       }
       .group-item:hover {
         background: rgba(99, 102, 241, 0.1);
@@ -159,6 +166,12 @@
       .active-group {
         background: rgba(99, 102, 241, 0.2);
         border-left: 3px solid var(--primary);
+      }
+
+      /* Form Elements */
+      input,
+      select {
+        border-radius: 8px;
       }
 
       /* Animations */
@@ -196,9 +209,30 @@
       /* Badge Styles */
       .badge {
         transition: all 0.2s ease;
+        border-radius: 9999px;
       }
       .badge:hover {
         transform: translateY(-1px);
+      }
+
+      /* Action buttons */
+      .action-btn {
+        border-radius: 6px;
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+      }
+
+      /* Improved mobile responsiveness */
+      @media (max-width: 768px) {
+        .question-card {
+          padding: 1rem;
+        }
+
+        .group-header-stats {
+          flex-wrap: wrap;
+          gap: 1rem;
+          justify-content: center;
+        }
       }
     </style>
   </head>
@@ -207,7 +241,7 @@
     <div class="md:hidden fixed top-4 left-4 z-40">
       <button
         id="menuButton"
-        class="text-gray-300 hover:text-white focus:outline-none bg-gray-800/80 p-2 rounded-full transition"
+        class="text-gray-300 hover:text-white focus:outline-none bg-gray-800/80 p-3 rounded-full transition"
       >
         <i class="fas fa-bars text-xl"></i>
       </button>
@@ -229,7 +263,7 @@
           </h2>
           <button
             id="closeMenu"
-            class="text-gray-400 hover:text-white p-1 transition"
+            class="text-gray-400 hover:text-white p-2 rounded-full transition"
           >
             <i class="fas fa-times text-lg"></i>
           </button>
@@ -277,7 +311,7 @@
         >
           <a
             href="{{url_for('suggest')}}"
-            class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium transition"
+            class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium transition action-btn"
           >
             <i class="fas fa-plus-circle mr-2"></i>
             Create New Group
@@ -294,7 +328,7 @@
               Your Groups
             </h3>
             <button
-              class="text-indigo-400 hover:text-indigo-300 p-1 transition"
+              class="text-indigo-400 hover:text-indigo-300 p-2 rounded-full transition"
             >
               <i class="fas fa-ellipsis-h"></i>
             </button>
@@ -338,7 +372,7 @@
           <div class="mt-4 pt-4 border-t border-gray-800">
             <a
               href="{{url_for('suggest')}}"
-              class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium px-3 py-2 transition"
+              class="flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium px-3 py-2 transition action-btn"
             >
               <i class="fas fa-plus-circle mr-2"></i>
               Create New Group
@@ -372,7 +406,7 @@
                 </div>
               </div>
             </div>
-            <div class="flex flex-wrap gap-4">
+            <div class="flex flex-wrap gap-4 group-header-stats">
               <div class="text-center">
                 <div class="text-2xl font-bold text-white">
                   {{ questions_with_votes|length }}
@@ -416,7 +450,7 @@
               class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-sm"
             ></i>
             <button
-              class="absolute right-3 top-3 text-gray-400 hover:text-white transition"
+              class="absolute right-3 top-3 text-gray-400 hover:text-white transition p-1 rounded-md"
             >
               <i class="fas fa-sliders-h"></i>
             </button>
@@ -442,13 +476,13 @@
 
         <!-- Questions Header -->
         <div
-          class="flex justify-between items-center mb-6 animate-fade-in-up"
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 animate-fade-in-up gap-3"
           style="animation-delay: 0.2s"
         >
           <h2 class="text-xl font-semibold text-white">Recent Questions</h2>
           <a
             href="{{ url_for('question', group_name=group.name) }}"
-            class="btn-primary flex items-center justify-center gap-2"
+            class="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <i class="fas fa-plus"></i> New Question
           </a>
@@ -512,7 +546,9 @@
                   </div>
                 </div>
               </div>
-              <button class="text-gray-400 hover:text-white p-1 transition">
+              <button
+                class="text-gray-400 hover:text-white p-1 transition rounded-md"
+              >
                 <i class="fas fa-ellipsis-h"></i>
               </button>
             </div>
@@ -531,25 +567,27 @@
               </p>
             </a>
 
-            <div class="flex flex-wrap items-center justify-between mt-4">
-              <div class="flex items-center space-x-4">
+            <div class="flex flex-wrap items-center justify-between mt-4 gap-3">
+              <div class="flex items-center space-x-4 flex-wrap gap-2">
                 <!-- Voting Buttons -->
-                <div class="flex items-center space-x-2">
+                <div
+                  class="flex items-center space-x-2 bg-gray-800/50 p-1 rounded-lg"
+                >
                   {% if not q.isdeleted %}
                   <button
-                    class="vote-btn upvote {{ 'active' if q.has_upvoted else '' }} text-gray-400 hover:text-green-400"
+                    class="vote-btn upvote {{ 'active' if q.has_upvoted else '' }} text-gray-400 hover:text-green-400 p-1"
                     data-questid="{{ q.question.qstid }}"
                     onclick="voteQuestion('{{ q.question.qstid }}', 'up')"
                   >
                     <i class="fas fa-arrow-up text-lg"></i>
                   </button>
                   {% endif %}
-                  <span class="text-gray-200 font-medium vote-count">
+                  <span class="text-gray-200 font-medium vote-count px-1">
                     {{ q.net_count }}
                   </span>
                   {% if not q.isdeleted %}
                   <button
-                    class="vote-btn downvote {{ 'active' if q.has_downvoted else '' }} text-gray-400 hover:text-red-400"
+                    class="vote-btn downvote {{ 'active' if q.has_downvoted else '' }} text-gray-400 hover:text-red-400 p-1"
                     data-questid="{{ q.question.qstid }}"
                     onclick="voteQuestion('{{ q.question.qstid }}', 'down')"
                   >
@@ -577,12 +615,12 @@
 
               <div class="flex space-x-2">
                 <button
-                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition"
+                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition action-btn"
                 >
                   <i class="far fa-bookmark mr-1"></i> Save
                 </button>
                 <button
-                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition"
+                  class="text-gray-400 hover:text-indigo-400 text-sm flex items-center transition action-btn"
                 >
                   <i class="fas fa-share-alt mr-1"></i> Share
                 </button>
