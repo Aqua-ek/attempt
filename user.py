@@ -78,6 +78,13 @@ class Questions(db.Model):
         else:
             return self.qstcontent
 
+    @property
+    def displayed_question_title(self):
+        if self.isdeleted == True:
+            return "[deleted]"
+        else:
+            return self.qsttitle
+
 
 class Answers(db.Model):
     __tablename__ = 'answers'

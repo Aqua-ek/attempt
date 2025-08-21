@@ -461,7 +461,7 @@
           <div class="question-content">
             <div class="mb-2">
               <h1 class="text-xl font-bold text-white leading-tight mb-1">
-                {{ question.qsttitle }}
+                {{ question.displayed_question_title }}
               </h1>
 
               <div class="flex items-center text-xs text-gray-400 mb-2">
@@ -594,6 +594,7 @@
             <div class="flex">
               <!-- Answer voting -->
               <div class="vote-section">
+                {% if not answer.isdeleted %}
                 <button
                   class="vote-button {% if has_upvoted %}has-upvoted{% endif %}"
                   onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'up')"
@@ -601,12 +602,16 @@
                 >
                   <i class="fas fa-arrow-up"></i>
                 </button>
+                {% else %}
+                <i class="fas fa-arrow-up" style="color: rgb(60, 60, 60)"></i>
+                {% endif %}
                 <span
                   class="vote-count text-gray-300"
                   id="vote-count-{{ answer.answid }}"
                 >
                   {{ net_count }}
                 </span>
+                {% if not answer.isdeleted %}
                 <button
                   class="vote-button {% if has_downvoted %}has-downvoted{% endif %}"
                   onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'down')"
@@ -614,6 +619,9 @@
                 >
                   <i class="fas fa-arrow-down"></i>
                 </button>
+                {% else %}
+                <i class="fas fa-arrow-down" style="color: rgb(60, 60, 60)"></i>
+                {% endif %}
               </div>
 
               <div class="answer-content">
@@ -664,7 +672,7 @@
                     <i class="far fa-bookmark mr-1"></i> Save
                   </button>
                   {% if current_user.is_authenticated and current_user.id ==
-                  answer.sender.id and not question.isdeleted %}
+                  answer.sender.id and not answer.isdeleted %}
                   <button class="hover:text-indigo-300">
                     <i class="fas fa-edit mr-1"></i> Edit
                   </button>
