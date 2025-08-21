@@ -1,5 +1,5 @@
 from flask_socketio import emit, leave_room, join_room, send
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from ext import db
 from flask_migrate import Migrate
 from flask import Flask, render_template, request, session, redirect, url_for, flash
@@ -360,7 +360,8 @@ def question(group_name):
 
 @app.route("/showquestions/<group_name>", methods=["GET", "POST"])
 def group_questions(group_name):
-    questedgroup = Groups.query.filter_by(name=group_name).first()
+    questedgroup = Groups.query.filter_by(
+        name=group_name).first()
     if not questedgroup:
         flash("Group Does Not Exist")
         return redirect(url_for("home"))
@@ -372,11 +373,12 @@ def group_questions(group_name):
                 func.sum(Votes.value), 0).label("net_count")
         )
         .outerjoin(Votes, Votes.questid == Questions.qstid)
-        .filter(Questions.groupid == questedgroup.group_id)
+        .filter(Questions.groupid == questedgroup.group_id, or_(Questions.isdeleted.is_(False), Questions.isdeleted.is_(None)))
         .group_by(Questions.qstid)
         .order_by(Questions.qsttime.desc())  # Optional: newest first
         .all()
     )
+    print(group_questions)
 
     # Fetch approved groups for sidebar/menu
     user_groups = Groups.query.filter_by(isapproved=True).all()
