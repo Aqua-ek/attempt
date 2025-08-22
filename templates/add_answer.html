@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
     <title>Answer Question | Clack</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -17,12 +20,15 @@
         --darker-bg: #0b1120;
         --upvote: #10b981; /* Green */
         --downvote: #ef4444; /* Red */
+        --approve: #eab308; /* Yellow */
+        --approve-dark: #ca8a04; /* Darker yellow */
       }
 
       body {
         background: var(--darker-bg);
         font-family: "Inter", sans-serif;
         min-height: 100vh;
+        overflow-x: hidden;
       }
 
       .content-card {
@@ -65,6 +71,24 @@
 
       .has-downvoted:hover {
         color: #dc2626 !important; /* Darker red on hover */
+      }
+
+      /* Approve button styles */
+      .approve-button {
+        transition: all 0.2s ease;
+        color: #9ca3af; /* Default gray */
+      }
+
+      .approve-button:hover {
+        color: var(--approve) !important; /* Yellow on hover */
+      }
+
+      .is-approved {
+        color: var(--approve) !important; /* Yellow for approved */
+      }
+
+      .is-approved:hover {
+        color: var(--approve-dark) !important; /* Darker yellow on hover */
       }
 
       .input-field {
@@ -150,7 +174,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding-right: 1rem;
+        padding-right: 0.5rem;
       }
 
       .answer-content {
@@ -166,14 +190,15 @@
 
       .answer-footer {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         font-size: 0.75rem;
         color: #94a3b8;
         margin-top: 0.5rem;
+        gap: 0.5rem;
       }
 
       .answer-footer button {
-        margin-right: 1rem;
         padding: 0.25rem 0;
       }
 
@@ -220,7 +245,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding-right: 1rem;
+        padding-right: 0.5rem;
       }
 
       .question-content {
@@ -242,6 +267,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
+        padding: 1rem;
       }
 
       .modal-overlay.active {
@@ -253,7 +279,7 @@
         background: var(--dark-bg);
         border: 1px solid rgba(56, 70, 112, 0.5);
         border-radius: 8px;
-        width: 90%;
+        width: 100%;
         max-width: 400px;
         padding: 1.5rem;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
@@ -328,13 +354,199 @@
       }
 
       .modal-btn-confirm {
+        background: var(--approve);
+        color: #0f172a;
+        border: 1px solid var(--approve);
+        font-weight: 600;
+      }
+
+      .modal-btn-confirm:hover {
+        background: var(--approve-dark);
+        border-color: var(--approve-dark);
+      }
+
+      .modal-btn-delete {
         background: var(--downvote);
         color: white;
         border: 1px solid var(--downvote);
       }
 
-      .modal-btn-confirm:hover {
+      .modal-btn-delete:hover {
         background: #dc2626;
+        border-color: #dc2626;
+      }
+
+      /* Mobile-specific styles */
+      @media (max-width: 768px) {
+        .container {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        .question-vote-section,
+        .vote-section {
+          padding-right: 0.75rem;
+        }
+
+        .answer-card {
+          padding: 0.75rem;
+        }
+
+        .content-card {
+          padding: 1rem;
+        }
+
+        .answer-footer {
+          gap: 0.5rem;
+        }
+
+        .answer-footer button {
+          margin-right: 0;
+          padding: 0.5rem 0.25rem;
+          min-width: auto;
+        }
+
+        .question-actions,
+        .answer-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .question-actions button,
+        .answer-actions button {
+          padding: 0.5rem 0.25rem;
+          font-size: 0.75rem;
+        }
+
+        .modal-container {
+          padding: 1rem;
+        }
+
+        .modal-footer {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .modal-btn {
+          width: 100%;
+          text-align: center;
+        }
+
+        /* Mobile navigation */
+        .mobile-menu-button {
+          display: block;
+          background: transparent;
+          border: none;
+          color: #e2e8f0;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+
+        .desktop-nav {
+          display: none;
+        }
+
+        .mobile-nav {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 70%;
+          height: 100vh;
+          background: var(--dark-bg);
+          z-index: 100;
+          padding: 2rem 1.5rem;
+          transition: right 0.3s ease;
+          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .mobile-nav.active {
+          right: 0;
+        }
+
+        .mobile-nav-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 99;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .mobile-nav-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        .mobile-nav-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-close {
+          background: transparent;
+          border: none;
+          color: #e2e8f0;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+
+        .mobile-nav-content {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .mobile-nav-item {
+          display: flex;
+          align-items: center;
+          color: #e2e8f0;
+          text-decoration: none;
+          font-size: 1.1rem;
+          padding: 0.5rem 0;
+        }
+
+        .mobile-nav-item i {
+          margin-right: 0.75rem;
+          width: 24px;
+          text-align: center;
+        }
+      }
+
+      @media (min-width: 769px) {
+        .mobile-menu-button {
+          display: none;
+        }
+
+        .desktop-nav {
+          display: flex;
+        }
+      }
+
+      /* Touch improvements */
+      @media (max-width: 1024px) {
+        .vote-button,
+        .approve-button,
+        .delete-btn,
+        .answer-footer button {
+          min-height: 44px;
+          min-width: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .compact-submit-btn {
+          padding: 0.75rem 1.25rem;
+        }
       }
     </style>
   </head>
@@ -344,7 +556,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3 class="modal-title">Confirm Deletion</h3>
-          <button class="modal-close" id="close-modal">&times;</button>
+          <button class="modal-close" id="close-delete-modal">&times;</button>
         </div>
         <div class="modal-body">
           <p>
@@ -355,8 +567,32 @@
           <button class="modal-btn modal-btn-cancel">Cancel</button>
           <form id="delete-form" method="POST">
             <input type="hidden" />
-            <button type="submit" class="modal-btn modal-btn-confirm">
+            <button type="submit" class="modal-btn modal-btn-delete">
               Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approve Confirmation Modal -->
+    <div class="modal-overlay" id="approve-modal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Confirm Approval</h3>
+          <button class="modal-close" id="close-approve-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="approve-modal-text">
+            Are you sure you want to approve this answer?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn modal-btn-cancel">Cancel</button>
+          <form id="approve-form" method="POST">
+            <input type="hidden" />
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Approve
             </button>
           </form>
         </div>
@@ -370,14 +606,20 @@
       <div
         class="container mx-auto px-4 py-3 flex items-center justify-between"
       >
-        <a
-          href="{{ url_for('home') }}"
-          class="text-xl font-semibold text-indigo-300 flex items-center gap-2 hover:text-indigo-200 transition-colors"
-        >
-          <i class="fas fa-comments"></i>
-          Clack
-        </a>
-        <nav class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <button class="mobile-menu-button mr-3" id="mobile-menu-button">
+            <i class="fas fa-bars"></i>
+          </button>
+          <a
+            href="{{ url_for('home') }}"
+            class="text-xl font-semibold text-indigo-300 flex items-center gap-2 hover:text-indigo-200 transition-colors"
+          >
+            <i class="fas fa-comments"></i>
+            <span class="hidden sm:inline">Clack</span>
+          </a>
+        </div>
+
+        <nav class="desktop-nav items-center space-x-4">
           {% if current_user.is_authenticated %}
           <a
             href="{{ url_for('user') }}"
@@ -387,25 +629,65 @@
               {{ current_user.name[0].upper() }}{{ current_user.name[1].upper()
               if current_user.name|length > 1 else '' }}
             </div>
-            {{ current_user.name }}
+            <span class="hidden sm:inline">{{ current_user.name }}</span>
           </a>
           <a
             href="{{ url_for('logout') }}"
             class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
           >
-            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            <i class="fas fa-sign-out-alt mr-1"></i>
+            <span class="hidden sm:inline">Logout</span>
           </a>
           {% else %}
           <a
             href="{{ url_for('login') }}"
             class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
           >
-            <i class="fas fa-sign-in-alt mr-1"></i> Login
+            <i class="fas fa-sign-in-alt mr-1"></i>
+            <span class="hidden sm:inline">Login</span>
           </a>
           {% endif %}
         </nav>
       </div>
     </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <div class="mobile-nav" id="mobile-nav">
+      <div class="mobile-nav-header">
+        <h3 class="text-xl font-semibold text-indigo-300">Menu</h3>
+        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
+      </div>
+      <div class="mobile-nav-content">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('user') }}" class="mobile-nav-item">
+          <i class="fas fa-user"></i>
+          <span>My Profile</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="mobile-nav-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="mobile-nav-item">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Login</span>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('home') }}" class="mobile-nav-item">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+          <i class="fas fa-users"></i>
+          <span>Groups</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+          <i class="fas fa-star"></i>
+          <span>Featured</span>
+        </a>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-4 max-w-5xl">
@@ -464,7 +746,9 @@
                 {{ question.displayed_question_title }}
               </h1>
 
-              <div class="flex items-center text-xs text-gray-400 mb-2">
+              <div
+                class="flex flex-wrap items-center text-xs text-gray-400 mb-2"
+              >
                 <span class="mr-2">
                   Asked by
                   <a
@@ -504,21 +788,21 @@
             </div>
 
             <div
-              class="flex items-center text-sm text-gray-400 border-t border-gray-800 pt-3"
+              class="question-actions flex flex-wrap items-center text-sm text-gray-400 border-t border-gray-800 pt-3 gap-2"
             >
-              <button class="flex items-center mr-4 hover:text-indigo-300">
+              <button class="flex items-center hover:text-indigo-300">
                 <i class="far fa-comment mr-1"></i>
                 {{ question.answers|length }} answers
               </button>
-              <button class="flex items-center mr-4 hover:text-indigo-300">
+              <button class="flex items-center hover:text-indigo-300">
                 <i class="far fa-bookmark mr-1"></i> Save
               </button>
-              <button class="flex items-center mr-4 hover:text-indigo-300">
+              <button class="flex items-center hover:text-indigo-300">
                 <i class="fas fa-share-alt mr-1"></i> Share
               </button>
               {% if current_user.is_authenticated and current_user.id ==
               question.sender.id and not question.isdeleted %}
-              <button class="flex items-center mr-4 hover:text-indigo-300">
+              <button class="flex items-center hover:text-indigo-300">
                 <i class="fas fa-edit mr-1"></i> Edit
               </button>
               <button
@@ -562,8 +846,10 @@
 
       <!-- Answers Section -->
       <div class="content-card rounded-lg p-4">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-indigo-300">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4"
+        >
+          <h2 class="text-lg font-semibold text-indigo-300 mb-2 sm:mb-0">
             {{ answers|length }} Answers
           </h2>
           <div class="text-sm text-gray-400 flex items-center">
@@ -684,6 +970,21 @@
                     <i class="fas fa-trash-alt mr-1"></i> Delete
                   </button>
                   {% endif %}
+
+                  <!-- Approve Button -->
+                  {% if current_user.is_authenticated and current_user.id ==
+                  question.sender.id %}
+                  <button
+                    class="approve-button {% if answer.isapproved %}is-approved{% endif %}"
+                    data-answer-id="{{ answer.answid }}"
+                    data-is-approved="{{ 'true' if answer.isapproved else 'false' }}"
+                    onclick="showApproveModal(this)"
+                  >
+                    <i class="fa-solid fa-star mr-1"></i>
+                    {{ 'Approved' if answer.isapproved else 'Approve' }}
+                  </button>
+                  {% endif %}
+
                   <button class="hover:text-indigo-300">
                     <i class="fas fa-flag mr-1"></i> Report
                   </button>
@@ -739,6 +1040,28 @@
     </footer>
 
     <script>
+      // Mobile navigation functionality
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileNavClose = document.getElementById('mobile-nav-close');
+      const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+      const mobileNav = document.getElementById('mobile-nav');
+
+      function openMobileNav() {
+        mobileNav.classList.add('active');
+        mobileNavOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeMobileNav() {
+        mobileNav.classList.remove('active');
+        mobileNavOverlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      mobileMenuButton.addEventListener('click', openMobileNav);
+      mobileNavClose.addEventListener('click', closeMobileNav);
+      mobileNavOverlay.addEventListener('click', closeMobileNav);
+
       // Delete Modal Functionality
       const deleteModal = document.getElementById('delete-modal');
       const deleteForm = document.getElementById('delete-form');
@@ -759,21 +1082,64 @@
         });
       });
 
-      // Close modal when clicking the close button
-      document.getElementById('close-modal').addEventListener('click', () => {
+      // Close delete modal when clicking the close button
+      document.getElementById('close-delete-modal').addEventListener('click', () => {
         deleteModal.classList.remove('active');
       });
 
-      // Close modal when clicking outside
+      // Close delete modal when clicking outside
       deleteModal.addEventListener('click', (e) => {
         if (e.target === deleteModal) {
           deleteModal.classList.remove('active');
         }
       });
 
-      // Close modal with cancel button
-      document.querySelector('.modal-btn-cancel').addEventListener('click', () => {
+      // Close delete modal with cancel button
+      document.querySelector('#delete-modal .modal-btn-cancel').addEventListener('click', () => {
         deleteModal.classList.remove('active');
+      });
+
+      // Approve Modal Functionality
+      const approveModal = document.getElementById('approve-modal');
+      const approveForm = document.getElementById('approve-form');
+      const approveModalText = document.getElementById('approve-modal-text');
+      let currentApproveAnswerId = '';
+      let currentIsApproved = false;
+
+      // Function to show approve modal
+      function showApproveModal(button) {
+        currentApproveAnswerId = button.dataset.answerId;
+        currentIsApproved = button.dataset.isApproved === 'true';
+
+        // Update the form action
+        approveForm.action = `/approve_answer/${currentApproveAnswerId}`;
+
+        // Update the modal text based on current state
+        if (currentIsApproved) {
+          approveModalText.textContent = 'Are you sure you want to remove approval from this answer?';
+        } else {
+          approveModalText.textContent = 'Are you sure you want to approve this answer?';
+        }
+
+        // Show the modal
+        approveModal.classList.add('active');
+      }
+
+      // Close approve modal when clicking the close button
+      document.getElementById('close-approve-modal').addEventListener('click', () => {
+        approveModal.classList.remove('active');
+      });
+
+      // Close approve modal when clicking outside
+      approveModal.addEventListener('click', (e) => {
+        if (e.target === approveModal) {
+          approveModal.classList.remove('active');
+        }
+      });
+
+      // Close approve modal with cancel button
+      document.querySelector('#approve-modal .modal-btn-cancel').addEventListener('click', () => {
+        approveModal.classList.remove('active');
       });
 
       // Close flash messages

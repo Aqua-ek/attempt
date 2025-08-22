@@ -39,6 +39,15 @@ def dashboard():
     return render_template("dashboard.html")
 
 
+def update_streak(id):
+    streak_user = db.session.get(Users, id)
+    if streak_user:
+        now = datetime.now(timezone.utc)
+        if streak_user.lastupdate == None or now - streak_user.lastupdate >= timedelta(hours=24):
+            streak_user.streaks += 1
+            db.session.commit()
+
+
 @app.route("/user")
 def user():
     if current_user.is_authenticated == False:
@@ -617,20 +626,13 @@ def upvoteanswer(questid, ansid):
         or 0
     )
     time_diff = datetime.now() - qst.qsttime
-    now = datetime.now(timezone.utc)
 
     if (
         net_count >= 2
         and time_diff <= timedelta(hours=24)
-        and marked == False
-        and (
-            qst.sender.lastupdate == None
-            or now - qst.sender.lastupdate >= timedelta(hours=24)
-        )
     ):
         qst.sender.streaks += 1
-        qst.sender.points += 5
-        marked = True
+        update_streak(qst.sender.id)
         db.session.commit()
 
     return jsonify(
@@ -743,6 +745,21 @@ def addtag(groupid, tagid):
     db.session.commit()
 
     return {"status": "success", "action": action, "tag_name": tag.tag_name}
+
+
+@app.route('/approve_answer/<int:answid>', methods=['POST'])
+def approve_answer(answid):
+    answer = db.session.get(Answers, answid)
+    if answer:
+        if answer.isapproved:
+            answer.isapproved = False
+            answer.sender.points -= 3
+        else:
+            answer.isapproved = True
+            answer.sender.points += 3
+            # update_streak(answer.sender.id)
+        db.session.commit()
+    return redirect(url_for('question_answers', qstid=answer.qstid))
 
 
 # Handle new messages
