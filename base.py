@@ -631,8 +631,8 @@ def upvoteanswer(questid, ansid):
         net_count >= 2
         and time_diff <= timedelta(hours=24)
     ):
-        qst.sender.streaks += 1
         update_streak(qst.sender.id)
+        qst.sender.points += 2
         db.session.commit()
 
     return jsonify(
