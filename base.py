@@ -757,7 +757,7 @@ def approve_answer(answid):
         else:
             answer.isapproved = True
             answer.sender.points += 3
-            # update_streak(answer.sender.id)
+            update_streak(answer.sender.id)
         db.session.commit()
     return redirect(url_for('question_answers', qstid=answer.qstid))
 
