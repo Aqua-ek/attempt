@@ -46,6 +46,8 @@
         border-radius: 0.75rem;
         padding: 1.5rem;
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
       }
 
       .card:hover {
@@ -57,8 +59,6 @@
       .profile-card {
         grid-column: 1 / -1;
         background: linear-gradient(135deg, var(--primary-dark), #4338ca);
-        position: relative;
-        overflow: hidden;
       }
 
       .profile-card::after {
@@ -148,6 +148,13 @@
         animation: fadeIn 0.8s ease-in-out;
       }
 
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -157,6 +164,41 @@
           opacity: 1;
           transform: translateY(0);
         }
+      }
+
+      /* Mobile Navigation */
+      .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(71, 85, 105, 0.3);
+        z-index: 40;
+        display: none;
+        padding: 0.5rem 0; /* Added padding for better spacing */
+      }
+
+      .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0; /* Reduced padding for better spacing */
+        color: var(--light-3);
+        transition: all 0.2s;
+        margin: 0 0.25rem; /* Added margin between buttons */
+      }
+
+      .mobile-nav-item.active {
+        color: var(--primary-light);
+      }
+
+      .mobile-nav-item span {
+        font-size: 0.7rem; /* Slightly smaller text */
+        margin-top: 0.2rem;
       }
 
       @media (max-width: 1024px) {
@@ -171,6 +213,89 @@
       @media (max-width: 768px) {
         .dashboard-container {
           grid-template-columns: 1fr;
+          padding: 1rem;
+          gap: 1rem;
+          padding-bottom: 5.5rem; /* Increased space for mobile nav */
+        }
+
+        .card {
+          padding: 1rem;
+        }
+
+        .mobile-nav {
+          display: flex;
+        }
+
+        .desktop-only {
+          display: none;
+        }
+
+        /* Reduced profile card size for mobile */
+        .profile-card .flex {
+          flex-direction: column;
+          text-align: center;
+          gap: 0.8rem; /* Reduced gap */
+        }
+
+        .profile-card .flex .gap-4 {
+          justify-content: center;
+          gap: 0.5rem; /* Reduced gap */
+        }
+
+        /* Smaller avatar on mobile */
+        .avatar-gradient {
+          padding: 1px;
+        }
+
+        .avatar-gradient .w-16 {
+          width: 3rem; /* 12px smaller */
+          height: 3rem; /* 12px smaller */
+          font-size: 1.25rem; /* Smaller initial */
+        }
+
+        /* Compact user info */
+        .profile-card h1 {
+          font-size: 1.35rem; /* Slightly smaller name */
+        }
+
+        .profile-card p {
+          font-size: 0.85rem; /* Slightly smaller text */
+        }
+
+        /* More compact stats row */
+        .profile-card .flex-wrap {
+          gap: 0.75rem; /* Reduced gap between stats */
+          justify-content: center;
+        }
+
+        .profile-card .flex-wrap .text-sm {
+          font-size: 0.75rem; /* Smaller stat text */
+        }
+
+        /* Bio text adjustment */
+        .profile-card .text-sm.mt-2 {
+          margin-top: 0.5rem;
+          font-size: 0.8rem;
+        }
+      }
+
+      /* Additional small screen optimization */
+      @media (max-width: 380px) {
+        .mobile-nav-item {
+          padding: 0.4rem 0;
+          margin: 0 0.5rem;
+        }
+
+        .mobile-nav-item span {
+          font-size: 0.65rem;
+        }
+
+        .profile-card .flex-wrap {
+          gap: 0.5rem;
+        }
+
+        .profile-card .flex-wrap .text-sm {
+          font-size: 0.7rem;
         }
       }
     </style>
@@ -221,13 +346,32 @@
             <div>
               <h1 class="text-2xl font-bold text-white">{{ user.name }}</h1>
               <p class="text-indigo-200">{{ user.email }}</p>
-              <p class="text-indigo-100 text-sm mt-1">
-                <i class="far fa-calendar mr-1"></i>
-                Joined {{ user.time.strftime('%b %Y') }}
+              <div class="flex flex-wrap gap-4 mt-2">
+                <div class="flex items-center text-sm text-indigo-100">
+                  <i class="far fa-calendar mr-1"></i>
+                  <span>Joined {{ user.time.strftime('%b %Y') }}</span>
+                </div>
+                <div class="flex items-center text-sm text-indigo-100">
+                  <i class="fas fa-trophy mr-1"></i>
+                  <span>Level {{ user.level }}</span>
+                </div>
+                <div class="flex items-center text-sm text-indigo-100">
+                  <i class="fas fa-fire mr-1"></i>
+                  <span>{{ user.streaks }} day streak</span>
+                </div>
+                <div class="flex items-center text-sm text-indigo-100">
+                  <i class="fas fa-star mr-1"></i>
+                  <span>{{ user.points }} points</span>
+                </div>
+              </div>
+              {% if user.bio and user.bio != 'No Bio Yet' %}
+              <p class="text-indigo-100 text-sm mt-2 italic">
+                "{{ user.bio }}"
               </p>
+              {% endif %}
             </div>
           </div>
-          <div class="flex gap-3">
+          <div class="flex gap-3 desktop-only">
             <a
               href="{{ url_for('home') }}"
               class="px-4 py-2 bg-indigo-900/40 hover:bg-indigo-900/60 rounded-lg transition flex items-center gap-2 text-white hover:glow-effect"
@@ -245,8 +389,10 @@
       </div>
 
       <!-- Stats Cards -->
-      <!-- <div class="stat-card card relative">
-        <div class="text-4xl font-bold text-indigo-400 mb-2">{{gp_amt}}</div>
+      <div class="stat-card card relative">
+        <div class="text-4xl font-bold text-indigo-400 mb-2">
+          {{ user.groups|length }}
+        </div>
         <div class="text-gray-400">Groups Joined</div>
         <a
           href="{{ url_for('show_groups') }}"
@@ -256,14 +402,18 @@
       </div>
 
       <div class="stat-card card relative">
-        <div class="text-4xl font-bold text-purple-400 mb-2">{{msg_amt}}</div>
+        <div class="text-4xl font-bold text-purple-400 mb-2">
+          {{ user.messages|length }}
+        </div>
         <div class="text-gray-400">Messages Sent</div>
       </div>
 
       <div class="stat-card card relative">
-        <div class="text-4xl font-bold text-green-400 mb-2">{{qst_amt}}</div>
+        <div class="text-4xl font-bold text-green-400 mb-2">
+          {{ user.questions|length }}
+        </div>
         <div class="text-gray-400">Questions Asked</div>
-      </div> -->
+      </div>
 
       <!-- Recent Groups (Wide Card) -->
       <div class="card wide-card tall-card">
@@ -280,7 +430,7 @@
         <div
           class="space-y-3 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
         >
-          {% for group in recent_groups %}
+          {% for group in user.groups[-5:]|reverse %}
           <a
             href="{{ url_for('chat', group_name=group.name) }}"
             class="flex items-center gap-3 p-3 rounded-lg bg-gray-800/30 border border-gray-700/50 hover:bg-gray-700/50 transition group"
@@ -288,7 +438,7 @@
             <div
               class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
             >
-              {{ group.name[0] }}
+              {{ group.name[0]|upper }}
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-medium truncate">{{ group.name }}</h3>
@@ -300,7 +450,7 @@
               class="fas fa-chevron-right text-gray-400 group-hover:text-indigo-300 transition"
             ></i>
           </a>
-          {% endfor %} {% if recent_groups|length == 0 %}
+          {% endfor %} {% if user.groups|length == 0 %}
           <div class="text-center py-6 text-gray-500">
             <i class="fas fa-users-slash text-3xl mb-2"></i>
             <p>No groups joined yet</p>
@@ -348,6 +498,19 @@
               <p class="text-xs text-gray-400">Request new subject</p>
             </div>
           </a>
+          <!-- <a
+            class="p-3 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition flex items-center gap-3 group"
+          >
+            <div
+              class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white transition group-hover:bg-green-500"
+            >
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <div>
+              <h3 class="font-medium">Edit Profile</h3>
+              <p class="text-xs text-gray-400">Update your information</p>
+            </div>
+          </a> -->
         </div>
       </div>
 
@@ -365,7 +528,7 @@
           class="space-y-4 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
         >
           {% if user.questions|length > 0 %} {% for question in
-          user.questions[-3:] %}
+          user.questions[-3:]|reverse %}
           <a
             href="{{ url_for('group_questions', group_name=question.group.name) }}"
             class="block p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition"
@@ -378,7 +541,7 @@
               <div
                 class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center text-xs text-white"
               >
-                {{ question.group.name[0] }}
+                {{ question.group.name[0]|upper }}
               </div>
               <span class="text-xs text-indigo-400"
                 >{{ question.group.name }}</span
@@ -392,6 +555,11 @@
           <div class="text-center py-6 text-gray-500">
             <i class="fas fa-question text-3xl mb-2"></i>
             <p>No questions yet</p>
+            <a
+              href="{{ url_for('show_groups') }}"
+              class="text-indigo-400 hover:underline mt-2 inline-block text-sm"
+              >Join a group to get started</a
+            >
           </div>
           {% endif %}
         </div>
@@ -410,8 +578,8 @@
         <div
           class="space-y-4 overflow-y-auto h-[calc(100%-40px)] pr-2 scroll-container"
         >
-          {% if user.messages|length > 0 %} {% for message in user.messages[-3:]
-          %}
+          {% if user.messages|length > 0 %} {% for message in
+          user.messages[-3:]|reverse %}
           <a
             href="{{ url_for('chat', group_name=message.group.name) }}"
             class="block p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition"
@@ -420,7 +588,7 @@
               <div
                 class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center text-xs text-white"
               >
-                {{ message.group.name[0] }}
+                {{ message.group.name[0]|upper }}
               </div>
               <span class="text-sm font-medium">{{ message.group.name }}</span>
               <span class="text-xs text-gray-500 ml-auto">
@@ -435,15 +603,42 @@
           <div class="text-center py-6 text-gray-500">
             <i class="fas fa-comment-slash text-3xl mb-2"></i>
             <p>No messages yet</p>
+            <a
+              href="{{ url_for('show_groups') }}"
+              class="text-indigo-400 hover:underline mt-2 inline-block text-sm"
+              >Join a conversation</a
+            >
           </div>
           {% endif %}
         </div>
       </div>
     </div>
 
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+      <div class="flex justify-around">
+        <a href="{{ url_for('home') }}" class="mobile-nav-item">
+          <i class="fas fa-home text-lg"></i>
+          <span>Home</span>
+        </a>
+        <a href="{{ url_for('show_groups') }}" class="mobile-nav-item">
+          <i class="fas fa-users text-lg"></i>
+          <span>Groups</span>
+        </a>
+        <a href="{{ url_for('suggest') }}" class="mobile-nav-item">
+          <i class="fas fa-lightbulb text-lg"></i>
+          <span>Suggest</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="mobile-nav-item">
+          <i class="fas fa-sign-out-alt text-lg"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </nav>
+
     <!-- Footer -->
     <div
-      class="text-center text-sm text-gray-500 py-6 border-t border-gray-800/50 mt-8"
+      class="text-center text-sm text-gray-500 py-6 border-t border-gray-800/50 mt-8 desktop-only"
     >
       <p>&copy; 2025 Clack · Learn. Connect. Elevate.</p>
     </div>
