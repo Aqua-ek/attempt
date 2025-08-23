@@ -527,19 +527,6 @@
                           >{{ group.datecreated.strftime("%b %d, %Y") }}</span
                         >
                       </span>
-                      {% if group.messages|length > 10 %}
-                      <span class="activity-indicator high-activity ml-2">
-                        Active
-                      </span>
-                      {% elif group.messages|length > 3 %}
-                      <span class="activity-indicator medium-activity ml-2">
-                        Some activity
-                      </span>
-                      {% else %}
-                      <span class="activity-indicator low-activity ml-2">
-                        New
-                      </span>
-                      {% endif %}
                     </div>
                   </div>
                 </div>
