@@ -5,60 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Groups | Clack</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cosmic: {
+                dark: "#0f172a",
+                darker: "#0b1120",
+                light: "#1e293b",
+                border: "rgba(56, 70, 112, 0.3)",
+                accent: "#6366f1",
+                purple: "#8b5cf6",
+                pink: "#d946ef",
+              },
+            },
+          },
+        },
+      };
+    </script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <style>
-      :root {
-        --primary: #6366f1;
-        --primary-light: #818cf8;
-        --primary-dark: #4f46e5;
-        --primary-extra-light: #e0e7ff;
-        --dark-1: #0f172a;
-        --dark-2: #1e293b;
-        --dark-3: #334155;
-        --light-1: #f8fafc;
-        --light-2: #e2e8f0;
-        --light-3: #94a3b8;
-      }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
       body {
-        background: linear-gradient(135deg, var(--dark-1), var(--dark-2));
         font-family: "Inter", sans-serif;
-        color: var(--light-2);
+        background: linear-gradient(135deg, #0b1120, #0f172a);
+        color: #e2e8f0;
         min-height: 100vh;
       }
-
-      .sidebar {
-        background: rgba(15, 23, 42, 0.98);
-        border-right: 1px solid rgba(71, 85, 105, 0.3);
+      .profile-header {
+        background: linear-gradient(
+          135deg,
+          #6366f1 0%,
+          #8b5cf6 50%,
+          #d946ef 100%
+        );
+      }
+      .profile-card {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(56, 70, 112, 0.3);
+        transition: all 0.2s ease;
+      }
+      .profile-card:hover {
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-2px);
+      }
+      .stat-card {
+        background: rgba(30, 41, 59, 0.5);
+        border-left: 4px solid;
+      }
+      .stat-messages {
+        border-left-color: #6366f1;
+      }
+      .stat-questions {
+        border-left-color: #10b981;
+      }
+      .stat-answers {
+        border-left-color: #f59e0b;
+      }
+      .stat-groups {
+        border-left-color: #8b5cf6;
+      }
+      .question-card {
+        background: rgba(30, 41, 59, 0.3);
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+      }
+      .question-card:hover {
+        border-left-color: #6366f1;
+        background: rgba(30, 41, 59, 0.5);
+      }
+      .group-chip {
+        background: rgba(30, 41, 59, 0.5);
+        transition: all 0.2s ease;
+      }
+      .group-chip:hover {
+        background: rgba(56, 70, 112, 0.5);
+      }
+      .scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: #334155 transparent;
+      }
+      .scroll-container::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .scroll-container::-webkit-scrollbar-thumb {
+        background-color: #334155;
+        border-radius: 3px;
+      }
+      .avatar-outline {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      }
+      .text-gradient {
+        background: linear-gradient(90deg, #818cf8, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .border-gradient {
+        border-image: linear-gradient(135deg, #6366f1, #8b5cf6) 1;
       }
 
+      /* Sidebar styles */
+      .sidebar {
+        background: rgba(15, 23, 42, 0.98);
+        border-right: 1px solid rgba(56, 70, 112, 0.3);
+      }
       .nav-item {
         transition: all 0.2s ease;
       }
-
       .nav-item:hover {
         background: rgba(99, 102, 241, 0.1);
       }
-
       .nav-item.active {
         background: rgba(99, 102, 241, 0.2);
-        border-left: 3px solid var(--primary);
+        border-left: 3px solid #6366f1;
       }
 
+      /* Group card styles */
       .group-card {
         transition: all 0.3s ease;
         background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(55, 65, 81, 0.3);
+        border: 1px solid rgba(56, 70, 112, 0.3);
         backdrop-filter: blur(10px);
       }
-
       .group-card:hover {
         transform: translateY(-5px);
         border-color: rgba(99, 102, 241, 0.5);
@@ -66,14 +142,9 @@
       }
 
       .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-dark)
-        );
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
         transition: all 0.3s ease;
       }
-
       .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
@@ -84,70 +155,26 @@
         border: 1px solid rgba(99, 102, 241, 0.3);
         transition: all 0.3s ease;
       }
-
       .btn-secondary:hover {
         background: rgba(30, 41, 59, 1);
         border-color: rgba(99, 102, 241, 0.5);
       }
 
-      .gradient-text {
-        background: linear-gradient(90deg, var(--primary-light), #c7d2fe);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-
       .group-avatar {
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-dark)
-        );
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-      }
-
-      .member-count {
-        position: relative;
-      }
-
-      .member-count::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -8px;
-        width: 1px;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.1);
       }
 
       .tag {
         display: inline-block;
         background: rgba(99, 102, 241, 0.15);
-        color: var(--primary-light);
+        color: #818cf8;
         padding: 0.25rem 0.5rem;
         border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 500;
         margin-right: 0.5rem;
         margin-bottom: 0.5rem;
-      }
-
-      .active-members {
-        position: relative;
-        padding-left: 1.5rem;
-      }
-
-      .active-members::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #10b981;
-        animation: pulse 2s infinite;
       }
 
       .empty-state-illustration {
@@ -169,16 +196,46 @@
         animation: pulse 4s infinite;
       }
 
-      .empty-state-illustration svg {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 100%;
-        fill: none;
-        stroke: var(--primary);
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .header-gradient {
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.2),
+          rgba(99, 102, 241, 0.1)
+        );
+      }
+
+      .floating-btn {
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .floating-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
       }
 
       @media (max-width: 1023px) {
@@ -227,30 +284,6 @@
         animation: fadeIn 0.5s ease-out forwards;
       }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 0.6;
-        }
-        50% {
-          opacity: 0.3;
-        }
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-      }
-
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
-
       .ripple {
         position: relative;
         overflow: hidden;
@@ -278,51 +311,6 @@
         opacity: 0.3;
         transition: 0s;
       }
-
-      .activity-indicator {
-        display: inline-flex;
-        align-items: center;
-        font-size: 0.75rem;
-      }
-
-      .activity-indicator::before {
-        content: "";
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 4px;
-      }
-
-      .high-activity::before {
-        background-color: #10b981;
-      }
-
-      .medium-activity::before {
-        background-color: #f59e0b;
-      }
-
-      .low-activity::before {
-        background-color: #64748b;
-      }
-
-      .header-gradient {
-        background: linear-gradient(
-          135deg,
-          rgba(79, 70, 229, 0.2),
-          rgba(99, 102, 241, 0.1)
-        );
-      }
-
-      .floating-btn {
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
-        transition: all 0.3s ease;
-      }
-
-      .floating-btn:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-      }
     </style>
   </head>
   <body class="min-h-screen">
@@ -338,14 +326,14 @@
         <nav class="flex flex-col space-y-1">
           <a
             href="{{ url_for('home') }}"
-            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+            class="nav-item px-3 py-2.5 rounded-lg text-slate-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
           >
             <i class="fas fa-home w-5 text-center"></i>
             <span>Home</span>
           </a>
           <a
             href="{{ url_for('show_groups') }}"
-            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+            class="nav-item px-3 py-2.5 rounded-lg text-slate-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
           >
             <i class="fas fa-compass w-5 text-center"></i>
             <span>Discover</span>
@@ -359,17 +347,17 @@
           </a>
           <a
             href="{{ url_for('suggest') }}"
-            class="nav-item px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
+            class="nav-item px-3 py-2.5 rounded-lg text-slate-300 hover:text-indigo-300 transition-colors flex items-center gap-3"
           >
             <i class="fas fa-lightbulb w-5 text-center"></i>
             <span>Suggest</span>
           </a>
         </nav>
 
-        <div class="mt-auto pt-6 border-t border-gray-800/50 px-2">
+        <div class="mt-auto pt-6 border-t border-slate-800/50 px-2">
           <a
             href="{{ url_for('logout') }}"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-indigo-300 transition-colors"
           >
             <i class="fas fa-sign-out-alt w-5 text-center"></i>
             <span>Logout</span>
@@ -384,44 +372,35 @@
       <div class="flex-1">
         <!-- Mobile Header -->
         <header
-          class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10 lg:hidden"
+          class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-10 lg:hidden"
         >
           <div
             class="container mx-auto px-4 py-3 flex items-center justify-between"
           >
             <button
               id="mobile-menu-button"
-              class="text-gray-300 hover:text-indigo-300 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+              class="text-slate-300 hover:text-indigo-300 p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
               <i class="fas fa-bars"></i>
             </button>
             <h1 class="text-lg font-semibold text-indigo-300">My Groups</h1>
             <div
-              class="w-8 h-8 bg-gray-800/50 rounded-full flex items-center justify-center"
+              class="w-8 h-8 bg-slate-800/50 rounded-full flex items-center justify-center"
             >
-              <i class="fas fa-users text-sm text-gray-400"></i>
+              <i class="fas fa-users text-sm text-slate-400"></i>
             </div>
           </div>
         </header>
 
         <!-- Hero Section -->
-        <section class="relative header-gradient py-12 px-6 overflow-hidden">
-          <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-full opacity-20">
-              <div
-                class="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-indigo-500/30 animate-float"
-              ></div>
-              <div
-                class="absolute top-1/3 right-1/4 w-40 h-40 rounded-full bg-purple-500/30 animate-float"
-                style="animation-delay: 1s"
-              ></div>
-            </div>
-          </div>
+        <section class="profile-header py-12 px-6 overflow-hidden">
           <div class="max-w-4xl mx-auto text-center relative z-10">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-              <span class="gradient-text">Your Study Communities</span>
+              <span class="text-gradient">Your Study Communities</span>
             </h1>
-            <p class="text-gray-300 max-w-2xl mx-auto text-lg md:text-xl mb-8">
+            <p
+              class="text-indigo-100 max-w-2xl mx-auto text-lg md:text-xl mb-8"
+            >
               Connect and collaborate with your joined study groups
             </p>
           </div>
@@ -447,26 +426,25 @@
           {% endif %} {% endwith %} {% if groups|length == 0 %}
           <!-- Empty State -->
           <div
-            class="flex flex-col items-center justify-center text-center py-20 px-4 text-gray-500 animate-fade-in"
+            class="flex flex-col items-center justify-center text-center py-20 px-4 text-slate-500 animate-fade-in"
           >
-            <div class="empty-state-illustration">
-              <svg viewBox="0 0 24 24">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+            <div class="empty-state-illustration mb-6">
+              <div
+                class="w-24 h-24 rounded-full bg-indigo-900/50 flex items-center justify-center text-4xl text-indigo-300 mx-auto"
+              >
+                <i class="fas fa-users"></i>
+              </div>
             </div>
-            <h3 class="text-2xl font-medium text-gray-300 mb-3">
+            <h3 class="text-2xl font-medium text-slate-300 mb-3">
               No Groups Yet
             </h3>
-            <p class="max-w-md mb-6 text-gray-400 text-lg">
+            <p class="max-w-md mb-6 text-slate-400 text-lg">
               You haven't joined any study groups yet. Discover and connect with
               learners who share your academic interests.
             </p>
             <a
               href="{{ url_for('show_groups') }}"
-              class="btn-primary text-white font-medium px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 hover:shadow-lg ripple"
+              class="btn-primary text-white font-medium px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 ripple"
             >
               <i class="fas fa-search"></i> Browse Groups
             </a>
@@ -481,7 +459,7 @@
                 <h2 class="text-2xl font-bold text-white mb-1">
                   Your Study Groups
                 </h2>
-                <p class="text-gray-400">
+                <p class="text-slate-400">
                   <span class="text-indigo-300 font-medium"
                     >{{ groups|length }}</span
                   >
@@ -491,7 +469,7 @@
               <div class="flex items-center gap-3">
                 <a
                   href="{{ url_for('show_groups') }}"
-                  class="text-sm text-indigo-400 hover:text-indigo-300 px-4 py-2 rounded-lg hover:bg-gray-800/50 transition flex items-center gap-2"
+                  class="text-sm text-indigo-400 hover:text-indigo-300 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition flex items-center gap-2"
                 >
                   <i class="fas fa-plus"></i> Join More
                 </a>
@@ -500,7 +478,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {% for group in groups %} {% if group.isapproved %}
-              <div class="group-card rounded-xl p-5 hover:shadow-lg">
+              <div class="profile-card rounded-xl p-6 border-gradient">
                 <div class="flex items-start gap-4 mb-4">
                   <div
                     class="group-avatar w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 text-xl"
@@ -512,7 +490,7 @@
                       {{ group.name }}
                     </h3>
                     <div
-                      class="flex items-center gap-3 text-xs text-gray-400 mt-1"
+                      class="flex items-center gap-3 text-xs text-slate-400 mt-1"
                     >
                       <span class="flex items-center gap-1">
                         <i class="fas fa-user-friends"></i>
@@ -521,7 +499,7 @@
                           group.members|length != 1 else '' }}</span
                         >
                       </span>
-                      <span class="member-count pl-2 flex items-center gap-1">
+                      <span class="pl-2 flex items-center gap-1">
                         <i class="fas fa-calendar-alt"></i>
                         <span
                           >{{ group.datecreated.strftime("%b %d, %Y") }}</span
@@ -532,7 +510,7 @@
                 </div>
 
                 <p
-                  class="text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed"
+                  class="text-slate-300 text-sm mb-4 line-clamp-3 leading-relaxed"
                 >
                   {{ group.groupdesc }}
                 </p>
@@ -549,14 +527,14 @@
                 <div class="flex gap-3">
                   <a
                     href="{{ url_for('group_questions', group_name=group.name) }}"
-                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 hover:bg-gray-800/90 ripple"
+                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 ripple"
                   >
                     <i class="fas fa-question-circle"></i> Questions ({{
                     group.questions|length }})
                   </a>
                   <a
                     href="{{ url_for('chat', group_name=group.name) }}"
-                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 hover:bg-gray-800/90 ripple"
+                    class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 ripple"
                   >
                     <i class="fas fa-comment-dots"></i> Chat ({{
                     group.messages|length }})
@@ -570,7 +548,7 @@
 
           <!-- CTA Section -->
           <div
-            class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-2xl p-8 border border-gray-700/50 mt-12 text-center relative overflow-hidden"
+            class="profile-card rounded-2xl p-8 border-gradient mt-12 text-center relative overflow-hidden"
           >
             <div
               class="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-indigo-500/10"
@@ -587,13 +565,13 @@
               <h3 class="text-xl font-bold text-white mb-3">
                 Looking for more groups?
               </h3>
-              <p class="text-gray-300 mb-6">
+              <p class="text-slate-300 mb-6">
                 Discover new study groups that match your academic interests and
                 goals.
               </p>
               <a
                 href="{{ url_for('show_groups') }}"
-                class="btn-primary inline-block text-white px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto hover:shadow-lg ripple"
+                class="btn-primary inline-block text-white px-8 py-3 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto ripple"
               >
                 <i class="fas fa-search"></i> Browse Groups
               </a>
@@ -603,7 +581,7 @@
 
         <!-- Footer -->
         <footer
-          class="text-center text-sm text-gray-500 py-8 border-t border-gray-800/50 mt-12"
+          class="text-center text-sm text-slate-500 py-8 border-t border-slate-800/50 mt-12"
         >
           <div class="container mx-auto px-4">
             <div
