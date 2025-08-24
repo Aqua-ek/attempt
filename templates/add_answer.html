@@ -770,21 +770,13 @@
                 </a>
                 {% endif %}
               </div>
-
-              <!-- Tags -->
-              <div class="mb-3 flex flex-wrap">
-                {% if question.tags %} {% for tag in question.tags.split(',') %}
-                <span class="tag">
-                  <i class="fas fa-tag mr-1"></i>{{ tag.strip() }}
-                </span>
-                {% endfor %} {% endif %}
-              </div>
             </div>
-
+            <!-- prettier-ignore -->
             <div
               class="markdown-content text-gray-300 mb-4 whitespace-pre-wrap"
             >
-              {{ question.displayed_question }}
+              <!-- prettier-ignore -->
+{{ question.displayed_question }}
             </div>
 
             <div

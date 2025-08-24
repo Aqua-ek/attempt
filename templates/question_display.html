@@ -281,7 +281,7 @@
           </div>
         </div>
         <div class="space-y-1 overflow-y-auto max-h-[70vh]">
-          {% for g in user_groups %}
+          {% if user_groups %} {% for g in user_groups %}
           <a
             href="{{ url_for('group_questions', group_name=g.name) }}"
             class="group-item flex items-center px-3 py-3 rounded-md text-sm font-medium {{ 'active-group text-white' if g.name == group.name else 'text-gray-300 hover:text-white' }}"
@@ -316,6 +316,7 @@
             <i class="fas fa-plus-circle mr-2"></i>
             Create New Group
           </a>
+          {% endif %}
         </div>
       </div>
 
@@ -344,6 +345,8 @@
             ></i>
           </div>
           <div class="space-y-1 overflow-y-auto max-h-[70vh]">
+            <!-- prettier-ignore -->
+            {% if user_groups %}
             {% for g in user_groups %}
             <a
               href="{{ url_for('group_questions', group_name=g.name) }}"
@@ -367,7 +370,9 @@
               </span>
               {% endif %}
             </a>
-            {% endfor %}
+            <!-- prettier-ignore -->
+            {% endfor %} 
+            {% endif %}
           </div>
           <div class="mt-4 pt-4 border-t border-gray-800">
             <a

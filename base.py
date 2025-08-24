@@ -400,7 +400,7 @@ def group_questions(group_name):
     print(group_questions)
 
     # Fetch approved groups for sidebar/menu
-    user_groups = current_user.groups
+    user_groups = current_user.groups if current_user.is_authenticated else None
 
     # Prepare data with user's vote status
     questions_with_votes = []
