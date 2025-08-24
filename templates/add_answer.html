@@ -22,6 +22,8 @@
         --downvote: #ef4444; /* Red */
         --approve: #eab308; /* Yellow */
         --approve-dark: #ca8a04; /* Darker yellow */
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 70px;
       }
 
       body {
@@ -29,11 +31,251 @@
         font-family: "Inter", sans-serif;
         min-height: 100vh;
         overflow-x: hidden;
+        display: flex;
       }
 
+      /* Sidebar Styles */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: var(--dark-bg);
+        border-right: 1px solid rgba(56, 70, 112, 0.3);
+        transition: all 0.3s ease;
+        z-index: 40;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+
+      .sidebar-header {
+        padding: 1.5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #818cf8;
+        font-weight: bold;
+        font-size: 1.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .sidebar-toggle {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sidebar-toggle:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+      }
+
+      .sidebar-nav {
+        padding: 1rem 0;
+      }
+
+      .nav-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .nav-section-title {
+        padding: 0 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .sidebar.collapsed .nav-section-title {
+        display: none;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: #cbd5e1;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+      }
+
+      .nav-item.active {
+        background: rgba(99, 102, 241, 0.2);
+        color: #818cf8;
+        border-right: 2px solid var(--primary);
+      }
+
+      .nav-icon {
+        width: 24px;
+        margin-right: 0.75rem;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .sidebar.collapsed .nav-text {
+        display: none;
+      }
+
+      .user-section {
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: auto;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        color: white;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .user-details {
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .user-name {
+        font-weight: 500;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+      }
+
+      .user-status {
+        font-size: 0.75rem;
+        color: #94a3b8;
+      }
+
+      .sidebar.collapsed .user-details {
+        display: none;
+      }
+
+      .logout-btn {
+        margin-top: 0.5rem;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .logout-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+      }
+
+      .sidebar.collapsed .logout-btn span {
+        display: none;
+      }
+
+      .sidebar.collapsed .logout-btn {
+        justify-content: center;
+      }
+
+      /* Main content area */
+      .main-content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-content.expanded {
+        margin-left: var(--sidebar-collapsed-width);
+      }
+
+      .content-header {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(56, 70, 112, 0.3);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+
+      .mobile-menu-button {
+        display: none;
+        background: transparent;
+        border: none;
+        color: #e2e8f0;
+        font-size: 1.25rem;
+        cursor: pointer;
+      }
+
+      .page-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+
+      .content-body {
+        flex: 1;
+        padding: 1.5rem;
+      }
+
+      /* Content card styles */
       .content-card {
         background: rgba(15, 23, 42, 0.8);
         border: 1px solid rgba(56, 70, 112, 0.3);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
       }
 
       .answer-card {
@@ -113,23 +355,6 @@
         100% {
           box-shadow: none;
         }
-      }
-
-      .user-avatar {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-dark)
-        );
-        color: white;
-        font-weight: bold;
-        flex-shrink: 0;
       }
 
       .vote-count {
@@ -376,24 +601,109 @@
         border-color: #dc2626;
       }
 
+      /* Footer */
+      .main-footer {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.75rem;
+        color: #64748b;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: auto;
+      }
+
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      .footer-links a {
+        color: #64748b;
+        transition: color 0.2s ease;
+      }
+
+      .footer-links a:hover {
+        color: #818cf8;
+      }
+
       /* Mobile-specific styles */
+      @media (max-width: 1024px) {
+        .sidebar {
+          transform: translateX(-100%);
+          width: var(--sidebar-width);
+        }
+
+        .sidebar.mobile-open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .main-content.expanded {
+          margin-left: 0;
+        }
+
+        .mobile-menu-button {
+          display: block;
+        }
+
+        .sidebar-toggle {
+          display: none;
+        }
+
+        .overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 35;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        /* Touch improvements */
+        .vote-button,
+        .approve-button,
+        .delete-btn,
+        .answer-footer button {
+          min-height: 44px;
+          min-width: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .compact-submit-btn {
+          padding: 0.75rem 1.25rem;
+        }
+
+        .nav-item {
+          padding: 1rem;
+        }
+      }
+
       @media (max-width: 768px) {
-        .container {
-          padding-left: 1rem;
-          padding-right: 1rem;
-        }
-
-        .question-vote-section,
-        .vote-section {
-          padding-right: 0.75rem;
-        }
-
-        .answer-card {
-          padding: 0.75rem;
+        .content-body {
+          padding: 1rem;
         }
 
         .content-card {
           padding: 1rem;
+        }
+
+        .answer-card {
+          padding: 0.75rem;
         }
 
         .answer-footer {
@@ -432,125 +742,16 @@
           width: 100%;
           text-align: center;
         }
-
-        /* Mobile navigation */
-        .mobile-menu-button {
-          display: block;
-          background: transparent;
-          border: none;
-          color: #e2e8f0;
-          font-size: 1.5rem;
-          cursor: pointer;
-        }
-
-        .desktop-nav {
-          display: none;
-        }
-
-        .mobile-nav {
-          position: fixed;
-          top: 0;
-          right: -100%;
-          width: 70%;
-          height: 100vh;
-          background: var(--dark-bg);
-          z-index: 100;
-          padding: 2rem 1.5rem;
-          transition: right 0.3s ease;
-          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-        }
-
-        .mobile-nav.active {
-          right: 0;
-        }
-
-        .mobile-nav-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: 99;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.3s ease;
-        }
-
-        .mobile-nav-overlay.active {
-          opacity: 1;
-          visibility: visible;
-        }
-
-        .mobile-nav-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 2rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .mobile-nav-close {
-          background: transparent;
-          border: none;
-          color: #e2e8f0;
-          font-size: 1.5rem;
-          cursor: pointer;
-        }
-
-        .mobile-nav-content {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .mobile-nav-item {
-          display: flex;
-          align-items: center;
-          color: #e2e8f0;
-          text-decoration: none;
-          font-size: 1.1rem;
-          padding: 0.5rem 0;
-        }
-
-        .mobile-nav-item i {
-          margin-right: 0.75rem;
-          width: 24px;
-          text-align: center;
-        }
       }
 
-      @media (min-width: 769px) {
-        .mobile-menu-button {
+      @media (min-width: 1025px) {
+        .overlay {
           display: none;
-        }
-
-        .desktop-nav {
-          display: flex;
-        }
-      }
-
-      /* Touch improvements */
-      @media (max-width: 1024px) {
-        .vote-button,
-        .approve-button,
-        .delete-btn,
-        .answer-footer button {
-          min-height: 44px;
-          min-width: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .compact-submit-btn {
-          padding: 0.75rem 1.25rem;
         }
       }
     </style>
   </head>
-  <body class="text-gray-200 min-h-screen">
+  <body class="text-gray-200">
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="delete-modal">
       <div class="modal-container">
@@ -599,460 +800,509 @@
       </div>
     </div>
 
-    <!-- Navigation -->
-    <header
-      class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10"
-    >
-      <div
-        class="container mx-auto px-4 py-3 flex items-center justify-between"
-      >
-        <div class="flex items-center">
-          <button class="mobile-menu-button mr-3" id="mobile-menu-button">
-            <i class="fas fa-bars"></i>
-          </button>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="{{ url_for('home') }}" class="sidebar-logo">
+          <i class="fas fa-comments"></i>
+          <span class="nav-text">Clack</span>
+        </a>
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="{{ url_for('home') }}" class="nav-item active">
+            <span class="nav-icon"><i class="fas fa-home"></i></span>
+            <span class="nav-text">Home</span>
+          </a>
           <a
-            href="{{ url_for('home') }}"
-            class="text-xl font-semibold text-indigo-300 flex items-center gap-2 hover:text-indigo-200 transition-colors"
+            href="{{ url_for('group_questions',group_name=question.group.name)}}"
+            class="nav-item"
           >
-            <i class="fas fa-comments"></i>
-            <span class="hidden sm:inline">Clack</span>
+            <span class="nav-icon"><i class="fas fa-users"></i></span>
+            <span class="nav-text">Groups</span>
+          </a>
+          <a href="#" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-star"></i></span>
+            <span class="nav-text">Featured</span>
           </a>
         </div>
 
-        <nav class="desktop-nav items-center space-x-4">
-          {% if current_user.is_authenticated %}
-          <a
-            href="{{ url_for('user') }}"
-            class="flex items-center text-sm text-gray-300 hover:text-white transition-colors"
-          >
-            <div class="user-avatar text-sm mr-2">
-              {{ current_user.name[0].upper() }}{{ current_user.name[1].upper()
-              if current_user.name|length > 1 else '' }}
-            </div>
-            <span class="hidden sm:inline">{{ current_user.name }}</span>
+        <div class="nav-section">
+          <div class="nav-section-title">Personal</div>
+          <a href="{{ url_for('user') }}" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-user"></i></span>
+            <span class="nav-text">Profile</span>
           </a>
-          <a
-            href="{{ url_for('logout') }}"
-            class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
-          >
-            <i class="fas fa-sign-out-alt mr-1"></i>
-            <span class="hidden sm:inline">Logout</span>
+          <a href="#" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
+            <span class="nav-text">Saved</span>
           </a>
-          {% else %}
-          <a
-            href="{{ url_for('login') }}"
-            class="text-indigo-400 hover:text-indigo-300 transition text-sm flex items-center"
-          >
-            <i class="fas fa-sign-in-alt mr-1"></i>
-            <span class="hidden sm:inline">Login</span>
+          <a href="user" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-history"></i></span>
+            <span class="nav-text">History</span>
           </a>
-          {% endif %}
-        </nav>
-      </div>
-    </header>
+        </div>
+      </nav>
 
-    <!-- Mobile Navigation -->
-    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
-    <div class="mobile-nav" id="mobile-nav">
-      <div class="mobile-nav-header">
-        <h3 class="text-xl font-semibold text-indigo-300">Menu</h3>
-        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
-      </div>
-      <div class="mobile-nav-content">
+      <div class="user-section">
         {% if current_user.is_authenticated %}
-        <a href="{{ url_for('user') }}" class="mobile-nav-item">
-          <i class="fas fa-user"></i>
-          <span>My Profile</span>
-        </a>
-        <a href="{{ url_for('logout') }}" class="mobile-nav-item">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </a>
+        <div class="user-info">
+          <div class="user-avatar text-sm">
+            {{ current_user.name[0].upper() }}{{ current_user.name[1].upper() if
+            current_user.name|length > 1 else '' }}
+          </div>
+          <div class="user-details">
+            <div class="user-name">{{ current_user.name }}</div>
+            <div class="user-status">Online</div>
+          </div>
+        </div>
+        <button
+          class="logout-btn"
+          onclick="window.location.href='{{ url_for('logout') }}'"
+        >
+          <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+          <span class="nav-text">Logout</span>
+        </button>
         {% else %}
-        <a href="{{ url_for('login') }}" class="mobile-nav-item">
-          <i class="fas fa-sign-in-alt"></i>
-          <span>Login</span>
-        </a>
+        <button
+          class="logout-btn"
+          onclick="window.location.href='{{ url_for('login') }}'"
+        >
+          <span class="nav-icon"><i class="fas fa-sign-in-alt"></i></span>
+          <span class="nav-text">Login</span>
+        </button>
         {% endif %}
-        <a href="{{ url_for('home') }}" class="mobile-nav-item">
-          <i class="fas fa-home"></i>
-          <span>Home</span>
-        </a>
-        <a href="#" class="mobile-nav-item">
-          <i class="fas fa-users"></i>
-          <span>Groups</span>
-        </a>
-        <a href="#" class="mobile-nav-item">
-          <i class="fas fa-star"></i>
-          <span>Featured</span>
-        </a>
       </div>
     </div>
 
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-4 max-w-5xl">
-      <!-- Flash messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %}
-      <div id="flash-container" class="mb-6 space-y-3">
-        {% for category, message in messages %}
-        <div
-          class="flex items-start justify-between p-3 rounded-lg {% if category == 'success' %} bg-green-900/50 border border-green-800 text-green-200 {% elif category == 'error' or category == 'danger' %} bg-red-900/50 border border-red-800 text-red-200 {% else %} bg-blue-900/50 border border-blue-800 text-blue-200 {% endif %}"
-        >
-          <div class="text-sm flex items-center">
-            <i
-              class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' or category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"
-            ></i>
-            {{ message }}
-          </div>
-          <button
-            class="ml-4 text-sm opacity-70 hover:opacity-100 close-flash transition-opacity"
-            aria-label="close"
-          >
-            &times;
-          </button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %} {% endwith %}
+    <div class="main-content" id="main-content">
+      <header class="content-header">
+        <button class="mobile-menu-button" id="mobile-menu-button">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title">Question</h1>
+        <div></div>
+        <!-- Empty div for spacing -->
+      </header>
 
-      <!-- Question Section -->
-      <div class="content-card rounded-lg p-4 mb-4">
-        <div class="flex">
-          <!-- Question voting -->
-          <div class="question-vote-section">
-            <button
-              class="vote-button {% if question_has_upvoted %}has-upvoted{% endif %}"
-              onclick="voteQuestion('{{ question.qstid }}', 'up')"
-              id="upvote-question"
-            >
-              <i class="fas fa-arrow-up"></i>
-            </button>
-            <span class="vote-count text-gray-300" id="vote-count-question">
-              {{ question_vote_count }}
-            </span>
-            <button
-              class="vote-button {% if question_has_downvoted %}has-downvoted{% endif %}"
-              onclick="voteQuestion('{{ question.qstid }}', 'down')"
-              id="downvote-question"
-            >
-              <i class="fas fa-arrow-down"></i>
-            </button>
-          </div>
-
-          <div class="question-content">
-            <div class="mb-2">
-              <h1 class="text-xl font-bold text-white leading-tight mb-1">
-                {{ question.displayed_question_title }}
-              </h1>
-
-              <div
-                class="flex flex-wrap items-center text-xs text-gray-400 mb-2"
-              >
-                <span class="mr-2">
-                  Asked by
-                  <a
-                    href="{{ url_for('other_status', user_name=question.sender.name) if question.sender else '#' }}"
-                    class="text-indigo-300 hover:underline"
-                  >
-                    {{ question.sender.name if question.sender else 'Unknown' }}
-                  </a>
-                </span>
-                <span class="mr-2">
-                  {{ question.qsttime.strftime('%b %d, %Y at %H:%M') if
-                  question.qsttime else '' }}
-                </span>
-                {% if question.group %}
-                <a
-                  href="{{ url_for('group_questions', group_name=question.group.name) }}"
-                  class="text-indigo-300 hover:underline"
-                  ><i class="fas fa-users mr-1"></i>{{ question.group.name }}
-                </a>
-                {% endif %}
-              </div>
-            </div>
-            <!-- prettier-ignore -->
-            <div
-              class="markdown-content text-gray-300 mb-4 whitespace-pre-wrap"
-            >
-              <!-- prettier-ignore -->
-{{ question.displayed_question }}
-            </div>
-
-            <div
-              class="question-actions flex flex-wrap items-center text-sm text-gray-400 border-t border-gray-800 pt-3 gap-2"
-            >
-              <button class="flex items-center hover:text-indigo-300">
-                <i class="far fa-comment mr-1"></i>
-                {{ question.answers|length }} answers
-              </button>
-              <button class="flex items-center hover:text-indigo-300">
-                <i class="far fa-bookmark mr-1"></i> Save
-              </button>
-              <button class="flex items-center hover:text-indigo-300">
-                <i class="fas fa-share-alt mr-1"></i> Share
-              </button>
-              {% if current_user.is_authenticated and current_user.id ==
-              question.sender.id and not question.isdeleted %}
-              <button class="flex items-center hover:text-indigo-300">
-                <i class="fas fa-edit mr-1"></i> Edit
-              </button>
-              <button
-                class="hover:text-red-400 delete-btn"
-                data-type="qst"
-                data-id="{{ question.qstid }}"
-              >
-                <i class="fas fa-trash-alt mr-1"></i> Delete
-              </button>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Answer Form (Compact) -->
-      {% if current_user.is_authenticated %} {% if not question.isdeleted %}
-      <div class="content-card rounded-lg p-4 mb-4">
-        <form method="POST" action="" autocomplete="off">
-          {{ form.hidden_tag() }}
-          <div class="compact-editor">
-            <textarea
-              id="answer-editor"
-              name="answerbody"
-              placeholder="What are your thoughts?"
-              class="w-full"
-              rows="3"
-            ></textarea>
-            <div class="compact-editor-footer">
-              <div class="text-xs text-gray-500 flex items-center">
-                <i class="fas fa-info-circle mr-1"></i> Markdown supported
-              </div>
-              <button type="submit" class="compact-submit-btn">
-                Post Answer
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-      {% endif %} {% endif %}
-
-      <!-- Answers Section -->
-      <div class="content-card rounded-lg p-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4"
-        >
-          <h2 class="text-lg font-semibold text-indigo-300 mb-2 sm:mb-0">
-            {{ answers|length }} Answers
-          </h2>
-          <div class="text-sm text-gray-400 flex items-center">
-            Sorted by:
-            <select
-              class="bg-gray-800/50 text-gray-200 border border-gray-700 rounded px-2 py-1 ml-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-              id="sort-answers"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="votes">Top</option>
-            </select>
-          </div>
-        </div>
-
-        {% if answer_hold %}
-        <div class="space-y-3" id="answers-list">
-          {% for answer_data in answer_hold %} {% set answer =
-          answer_data.answer %} {% set net_count = answer_data.net_count %} {%
-          set has_upvoted = answer_data.has_upvoted %} {% set has_downvoted =
-          answer_data.has_downvoted %}
+      <div class="content-body">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div id="flash-container" class="mb-6 space-y-3">
+          {% for category, message in messages %}
           <div
-            class="answer-card rounded p-3 {% if loop.first %}highlight{% endif %}"
-            id="answer-{{ answer.answid }}"
-            data-time="{{ answer.anstime.timestamp() if answer.anstime else '' }}"
-            data-votes="{{ net_count }}"
+            class="flex items-start justify-between p-3 rounded-lg {% if category == 'success' %} bg-green-900/50 border border-green-800 text-green-200 {% elif category == 'error' or category == 'danger' %} bg-red-900/50 border border-red-800 text-red-200 {% else %} bg-blue-900/50 border border-blue-800 text-blue-200 {% endif %}"
           >
-            <div class="flex">
-              <!-- Answer voting -->
-              <div class="vote-section">
-                {% if not answer.isdeleted %}
-                <button
-                  class="vote-button {% if has_upvoted %}has-upvoted{% endif %}"
-                  onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'up')"
-                  id="upvote-{{ answer.answid }}"
-                >
-                  <i class="fas fa-arrow-up"></i>
-                </button>
-                {% else %}
-                <i class="fas fa-arrow-up" style="color: rgb(60, 60, 60)"></i>
-                {% endif %}
-                <span
-                  class="vote-count text-gray-300"
-                  id="vote-count-{{ answer.answid }}"
-                >
-                  {{ net_count }}
-                </span>
-                {% if not answer.isdeleted %}
-                <button
-                  class="vote-button {% if has_downvoted %}has-downvoted{% endif %}"
-                  onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'down')"
-                  id="downvote-{{ answer.answid }}"
-                >
-                  <i class="fas fa-arrow-down"></i>
-                </button>
-                {% else %}
-                <i class="fas fa-arrow-down" style="color: rgb(60, 60, 60)"></i>
-                {% endif %}
-              </div>
-
-              <div class="answer-content">
-                <!-- Answer header -->
-                <div class="answer-header">
-                  <a
-                    href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
-                    class="flex-shrink-0 mr-2"
-                  >
-                    <div class="user-avatar text-xs">
-                      {{ answer.sender.name[0].upper() if answer.sender else '?'
-                      }}{{ answer.sender.name[1].upper() if answer.sender and
-                      answer.sender.name|length > 1 else '' }}
-                    </div>
-                  </a>
-                  <div>
-                    <a
-                      href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
-                      class="text-sm font-medium text-indigo-300 hover:underline"
-                    >
-                      {{ answer.sender.name if answer.sender else 'Unknown' }}
-                    </a>
-                    <span class="text-xs text-gray-400 ml-2">
-                      <span
-                        class="time-ago"
-                        data-time="{{ answer.anstime.isoformat() }}"
-                      >
-                        {{ answer.anstime.strftime('%b %d, %Y at %H:%M') }}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Answer content -->
-                <div class="markdown-content text-gray-300 text-sm">
-                  {{ answer.displayed_answer }}
-                </div>
-
-                <!-- Answer footer -->
-                <div class="answer-footer">
-                  <button class="hover:text-indigo-300">
-                    <i class="fas fa-reply mr-1"></i> Reply
-                  </button>
-                  <button class="hover:text-indigo-300">
-                    <i class="fas fa-share-alt mr-1"></i> Share
-                  </button>
-                  <button class="hover:text-indigo-300">
-                    <i class="far fa-bookmark mr-1"></i> Save
-                  </button>
-                  {% if current_user.is_authenticated and current_user.id ==
-                  answer.sender.id and not answer.isdeleted %}
-                  <button class="hover:text-indigo-300">
-                    <i class="fas fa-edit mr-1"></i> Edit
-                  </button>
-                  <button
-                    class="hover:text-red-400 delete-btn"
-                    data-type="ans"
-                    data-id="{{ answer.answid }}"
-                  >
-                    <i class="fas fa-trash-alt mr-1"></i> Delete
-                  </button>
-                  {% endif %}
-
-                  <!-- Approve Button -->
-                  {% if current_user.is_authenticated and current_user.id ==
-                  question.sender.id %}
-                  <button
-                    class="approve-button {% if answer.isapproved %}is-approved{% endif %}"
-                    data-answer-id="{{ answer.answid }}"
-                    data-is-approved="{{ 'true' if answer.isapproved else 'false' }}"
-                    onclick="showApproveModal(this)"
-                  >
-                    <i class="fa-solid fa-star mr-1"></i>
-                    {{ 'Approved' if answer.isapproved else 'Approve' }}
-                  </button>
-                  {% endif %}
-
-                  <button class="hover:text-indigo-300">
-                    <i class="fas fa-flag mr-1"></i> Report
-                  </button>
-                </div>
-              </div>
+            <div class="text-sm flex items-center">
+              <i
+                class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' or category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"
+              ></i>
+              {{ message }}
             </div>
+            <button
+              class="ml-4 text-sm opacity-70 hover:opacity-100 close-flash transition-opacity"
+              aria-label="close"
+            >
+              &times;
+            </button>
           </div>
           {% endfor %}
         </div>
-        {% else %}
-        <div
-          class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl hover:border-indigo-500/30 transition-colors"
-        >
-          <i class="fas fa-comment-slash text-4xl mb-3 text-indigo-400/50"></i>
-          <h3 class="text-lg font-medium text-gray-400 mb-1">No answers yet</h3>
-          <p class="text-sm mb-4">Be the first to share what you know!</p>
-          {% if current_user.is_authenticated %}
-          <button
-            onclick="document.getElementById('answer-editor').focus()"
-            class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-500 transition-colors"
-          >
-            <i class="fas fa-pen-alt mr-1"></i> Write Answer
-          </button>
-          {% endif %}
-        </div>
-        {% endif %}
-      </div>
-    </main>
+        {% endif %} {% endwith %}
 
-    <!-- Footer -->
-    <footer
-      class="text-center text-xs text-gray-500 py-6 border-t border-gray-800/50 mt-8"
-    >
-      <div class="container mx-auto px-4">
-        <div
-          class="flex flex-col md:flex-row justify-center items-center gap-4"
-        >
-          <div>&copy; 2025 Clack · Learn. Connect. Elevate.</div>
-          <div class="flex space-x-4">
-            <a href="#" class="hover:text-indigo-300 transition-colors"
-              >Terms</a
-            >
-            <a href="#" class="hover:text-indigo-300 transition-colors"
-              >Privacy</a
-            >
-            <a href="#" class="hover:text-indigo-300 transition-colors">Help</a>
-            <a href="#" class="hover:text-indigo-300 transition-colors"
-              >About</a
-            >
+        <!-- Question Section -->
+        <div class="content-card rounded-lg p-4 mb-4">
+          <div class="flex">
+            <!-- Question voting -->
+            <div class="question-vote-section">
+              <button
+                class="vote-button {% if question_has_upvoted %}has-upvoted{% endif %}"
+                onclick="voteQuestion('{{ question.qstid }}', 'up')"
+                id="upvote-question"
+              >
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              <span class="vote-count text-gray-300" id="vote-count-question">
+                {{ question_vote_count }}
+              </span>
+              <button
+                class="vote-button {% if question_has_downvoted %}has-downvoted{% endif %}"
+                onclick="voteQuestion('{{ question.qstid }}', 'down')"
+                id="downvote-question"
+              >
+                <i class="fas fa-arrow-down"></i>
+              </button>
+            </div>
+
+            <div class="question-content">
+              <div class="mb-2">
+                <h1 class="text-xl font-bold text-white leading-tight mb-1">
+                  {{ question.displayed_question_title }}
+                </h1>
+
+                <div
+                  class="flex flex-wrap items-center text-xs text-gray-400 mb-2"
+                >
+                  <span class="mr-2">
+                    Asked by
+                    <a
+                      href="{{ url_for('other_status', user_name=question.sender.name) if question.sender else '#' }}"
+                      class="text-indigo-300 hover:underline"
+                    >
+                      {{ question.sender.name if question.sender else 'Unknown'
+                      }}
+                    </a>
+                  </span>
+                  <span class="mr-2">
+                    {{ question.qsttime.strftime('%b %d, %Y at %H:%M') if
+                    question.qsttime else '' }}
+                  </span>
+                  {% if question.group %}
+                  <a
+                    href="{{ url_for('group_questions', group_name=question.group.name) }}"
+                    class="text-indigo-300 hover:underline"
+                    ><i class="fas fa-users mr-1"></i>{{ question.group.name }}
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+              <!-- prettier-ignore -->
+              <div
+                class="markdown-content text-gray-300 mb-4 whitespace-pre-wrap"
+              >
+                <!-- prettier-ignore -->
+{{ question.displayed_question }}
+              </div>
+
+              <div
+                class="question-actions flex flex-wrap items-center text-sm text-gray-400 border-t border-gray-800 pt-3 gap-2"
+              >
+                <button class="flex items-center hover:text-indigo-300">
+                  <i class="far fa-comment mr-1"></i>
+                  {{ question.answers|length }} answers
+                </button>
+                <button class="flex items-center hover:text-indigo-300">
+                  <i class="far fa-bookmark mr-1"></i> Save
+                </button>
+                <button class="flex items-center hover:text-indigo-300">
+                  <i class="fas fa-share-alt mr-1"></i> Share
+                </button>
+                {% if current_user.is_authenticated and current_user.id ==
+                question.sender.id and not question.isdeleted %}
+                <button class="flex items-center hover:text-indigo-300">
+                  <i class="fas fa-edit mr-1"></i> Edit
+                </button>
+                <button
+                  class="hover:text-red-400 delete-btn"
+                  data-type="qst"
+                  data-id="{{ question.qstid }}"
+                >
+                  <i class="fas fa-trash-alt mr-1"></i> Delete
+                </button>
+                {% endif %}
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Answer Form (Compact) -->
+        {% if current_user.is_authenticated %} {% if not question.isdeleted %}
+        <div class="content-card rounded-lg p-4 mb-4">
+          <form method="POST" action="" autocomplete="off">
+            {{ form.hidden_tag() }}
+            <div class="compact-editor">
+              <textarea
+                id="answer-editor"
+                name="answerbody"
+                placeholder="What are your thoughts?"
+                class="w-full"
+                rows="3"
+              ></textarea>
+              <div class="compact-editor-footer">
+                <div class="text-xs text-gray-500 flex items-center">
+                  <i class="fas fa-info-circle mr-1"></i> Markdown supported
+                </div>
+                <button type="submit" class="compact-submit-btn">
+                  Post Answer
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        {% endif %} {% endif %}
+
+        <!-- Answers Section -->
+        <div class="content-card rounded-lg p-4">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4"
+          >
+            <h2 class="text-lg font-semibold text-indigo-300 mb-2 sm:mb-0">
+              {{ answers|length }} Answers
+            </h2>
+            <div class="text-sm text-gray-400 flex items-center">
+              Sorted by:
+              <select
+                class="bg-gray-800/50 text-gray-200 border border-gray-700 rounded px-2 py-1 ml-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                id="sort-answers"
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="votes">Top</option>
+              </select>
+            </div>
+          </div>
+
+          {% if answer_hold %}
+          <div class="space-y-3" id="answers-list">
+            {% for answer_data in answer_hold %} {% set answer =
+            answer_data.answer %} {% set net_count = answer_data.net_count %} {%
+            set has_upvoted = answer_data.has_upvoted %} {% set has_downvoted =
+            answer_data.has_downvoted %}
+            <div
+              class="answer-card rounded p-3 {% if loop.first %}highlight{% endif %}"
+              id="answer-{{ answer.answid }}"
+              data-time="{{ answer.anstime.timestamp() if answer.anstime else '' }}"
+              data-votes="{{ net_count }}"
+            >
+              <div class="flex">
+                <!-- Answer voting -->
+                <div class="vote-section">
+                  {% if not answer.isdeleted %}
+                  <button
+                    class="vote-button {% if has_upvoted %}has-upvoted{% endif %}"
+                    onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'up')"
+                    id="upvote-{{ answer.answid }}"
+                  >
+                    <i class="fas fa-arrow-up"></i>
+                  </button>
+                  {% else %}
+                  <i class="fas fa-arrow-up" style="color: rgb(60, 60, 60)"></i>
+                  {% endif %}
+                  <span
+                    class="vote-count text-gray-300"
+                    id="vote-count-{{ answer.answid }}"
+                  >
+                    {{ net_count }}
+                  </span>
+                  {% if not answer.isdeleted %}
+                  <button
+                    class="vote-button {% if has_downvoted %}has-downvoted{% endif %}"
+                    onclick="voteAnswer('{{ question.qstid }}', '{{ answer.answid }}', 'down')"
+                    id="downvote-{{ answer.answid }}"
+                  >
+                    <i class="fas fa-arrow-down"></i>
+                  </button>
+                  {% else %}
+                  <i
+                    class="fas fa-arrow-down"
+                    style="color: rgb(60, 60, 60)"
+                  ></i>
+                  {% endif %}
+                </div>
+
+                <div class="answer-content">
+                  <!-- Answer header -->
+                  <div class="answer-header">
+                    <a
+                      href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
+                      class="flex-shrink-0 mr-2"
+                    >
+                      <div class="user-avatar text-xs">
+                        {{ answer.sender.name[0].upper() if answer.sender else
+                        '?' }}{{ answer.sender.name[1].upper() if answer.sender
+                        and answer.sender.name|length > 1 else '' }}
+                      </div>
+                    </a>
+                    <div>
+                      <a
+                        href="{{ url_for('other_status', user_name=answer.sender.name) if answer.sender else '#' }}"
+                        class="text-sm font-medium text-indigo-300 hover:underline"
+                      >
+                        {{ answer.sender.name if answer.sender else 'Unknown' }}
+                      </a>
+                      <span class="text-xs text-gray-400 ml-2">
+                        <span
+                          class="time-ago"
+                          data-time="{{ answer.anstime.isoformat() }}"
+                        >
+                          {{ answer.anstime.strftime('%b %d, %Y at %H:%M') }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Answer content -->
+                  <div class="markdown-content text-gray-300 text-sm">
+                    {{ answer.displayed_answer }}
+                  </div>
+
+                  <!-- Answer footer -->
+                  <div class="answer-footer">
+                    <button class="hover:text-indigo-300">
+                      <i class="fas fa-reply mr-1"></i> Reply
+                    </button>
+                    <button class="hover:text-indigo-300">
+                      <i class="fas fa-share-alt mr-1"></i> Share
+                    </button>
+                    <button class="hover:text-indigo-300">
+                      <i class="far fa-bookmark mr-1"></i> Save
+                    </button>
+                    {% if current_user.is_authenticated and current_user.id ==
+                    answer.sender.id and not answer.isdeleted %}
+                    <button class="hover:text-indigo-300">
+                      <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button
+                      class="hover:text-red-400 delete-btn"
+                      data-type="ans"
+                      data-id="{{ answer.answid }}"
+                    >
+                      <i class="fas fa-trash-alt mr-1"></i> Delete
+                    </button>
+                    {% endif %}
+
+                    <!-- Approve Button -->
+                    {% if current_user.is_authenticated and current_user.id ==
+                    question.sender.id %}
+                    <button
+                      class="approve-button {% if answer.isapproved %}is-approved{% endif %}"
+                      data-answer-id="{{ answer.answid }}"
+                      data-is-approved="{{ 'true' if answer.isapproved else 'false' }}"
+                      onclick="showApproveModal(this)"
+                    >
+                      <i class="fa-solid fa-star mr-1"></i>
+                      {{ 'Approved' if answer.isapproved else 'Approve' }}
+                    </button>
+                    {% endif %}
+
+                    <button class="hover:text-indigo-300">
+                      <i class="fas fa-flag mr-1"></i> Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div
+            class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl hover:border-indigo-500/30 transition-colors"
+          >
+            <i
+              class="fas fa-comment-slash text-4xl mb-3 text-indigo-400/50"
+            ></i>
+            <h3 class="text-lg font-medium text-gray-400 mb-1">
+              No answers yet
+            </h3>
+            <p class="text-sm mb-4">Be the first to share what you know!</p>
+            {% if current_user.is_authenticated %}
+            <button
+              onclick="document.getElementById('answer-editor').focus()"
+              class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-500 transition-colors"
+            >
+              <i class="fas fa-pen-alt mr-1"></i> Write Answer
+            </button>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
       </div>
-    </footer>
+
+      <!-- Footer -->
+      <footer class="main-footer">
+        <div>&copy; 2025 Clack · Learn. Connect. Elevate.</div>
+        <div class="footer-links">
+          <a href="#">Terms</a>
+          <a href="#">Privacy</a>
+          <a href="#">Help</a>
+          <a href="#">About</a>
+        </div>
+      </footer>
+    </div>
 
     <script>
-      // Mobile navigation functionality
+      // Sidebar functionality
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      const sidebarToggle = document.getElementById('sidebar-toggle');
       const mobileMenuButton = document.getElementById('mobile-menu-button');
-      const mobileNavClose = document.getElementById('mobile-nav-close');
-      const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
-      const mobileNav = document.getElementById('mobile-nav');
+      const overlay = document.getElementById('overlay');
+      let isSidebarCollapsed = false;
 
-      function openMobileNav() {
-        mobileNav.classList.add('active');
-        mobileNavOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
+      // Toggle sidebar collapse/expand
+      function toggleSidebar() {
+        isSidebarCollapsed = !isSidebarCollapsed;
+
+        if (isSidebarCollapsed) {
+          sidebar.classList.add('collapsed');
+          mainContent.classList.add('expanded');
+          sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        } else {
+          sidebar.classList.remove('collapsed');
+          mainContent.classList.remove('expanded');
+          sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        }
+
+        // Save state to localStorage
+        localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
       }
 
-      function closeMobileNav() {
-        mobileNav.classList.remove('active');
-        mobileNavOverlay.classList.remove('active');
-        document.body.style.overflow = 'auto';
+      // Toggle mobile sidebar
+      function toggleMobileSidebar() {
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('active');
+
+        if (sidebar.classList.contains('mobile-open')) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = 'auto';
+        }
       }
 
-      mobileMenuButton.addEventListener('click', openMobileNav);
-      mobileNavClose.addEventListener('click', closeMobileNav);
-      mobileNavOverlay.addEventListener('click', closeMobileNav);
+      // Initialize sidebar state
+      function initSidebar() {
+        const savedState = localStorage.getItem('sidebarCollapsed');
+
+        // Check if we're on mobile
+        if (window.innerWidth <= 1024) {
+          isSidebarCollapsed = true;
+          sidebar.classList.remove('collapsed');
+          mainContent.classList.remove('expanded');
+          sidebar.classList.remove('mobile-open');
+          overlay.classList.remove('active');
+        } else {
+          isSidebarCollapsed = savedState === 'true';
+
+          if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+          } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+          }
+        }
+      }
+
+      // Event listeners
+      sidebarToggle.addEventListener('click', toggleSidebar);
+      mobileMenuButton.addEventListener('click', toggleMobileSidebar);
+      overlay.addEventListener('click', toggleMobileSidebar);
+
+      // Initialize on load and resize
+      window.addEventListener('load', initSidebar);
+      window.addEventListener('resize', initSidebar);
 
       // Delete Modal Functionality
       const deleteModal = document.getElementById('delete-modal');
