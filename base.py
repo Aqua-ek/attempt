@@ -279,7 +279,7 @@ def chat(group_name):
         flash("Group does not exist")
         return redirect(url_for("home"))
     if current_user.is_authenticated:
-        user_groups = current_user.groups
+        user_groups = current_user.groups[:5]
     else:
         user_groups = []
 
@@ -400,7 +400,7 @@ def group_questions(group_name):
     print(group_questions)
 
     # Fetch approved groups for sidebar/menu
-    user_groups = Groups.query.filter_by(isapproved=True).all()
+    user_groups = current_user.groups
 
     # Prepare data with user's vote status
     questions_with_votes = []

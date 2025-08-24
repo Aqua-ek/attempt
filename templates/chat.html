@@ -36,6 +36,8 @@
         font-family: "Inter", sans-serif;
         background: linear-gradient(135deg, #0b1120, #0f172a);
         color: #e2e8f0;
+        background-color: #1a1a2e;
+
         overflow: hidden;
       }
 
@@ -145,6 +147,7 @@
         position: absolute;
         bottom: 0;
         right: 0;
+        z-index: 10;
       }
 
       .message-time {
@@ -174,17 +177,18 @@
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(10px);
         display: block;
+        transition: transform 0.3s ease;
       }
 
       @media (max-width: 768px) {
         #groups-sidebar {
           transform: translateX(-100%);
-          transition: transform 0.3s ease;
           width: 80%;
           max-width: 300px;
         }
         #groups-sidebar.open {
           transform: translateX(0);
+          box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
         }
       }
 
@@ -225,6 +229,9 @@
       #chat-container {
         margin-left: 280px;
         width: calc(100% - 280px);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
       @media (max-width: 768px) {
@@ -239,6 +246,20 @@
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(10px);
         border-left: 1px solid rgba(255, 255, 255, 0.05);
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 320px;
+        z-index: 50;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+      }
+
+      #group-info-sidebar.open {
+        transform: translateX(0);
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
       }
 
       /* Input styling */
@@ -278,6 +299,7 @@
         background: rgba(15, 23, 42, 0.8);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        flex-shrink: 0;
       }
 
       /* Smooth transitions */
@@ -296,25 +318,6 @@
           0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
 
-      /* Mobile bottom navigation */
-      .mobile-nav {
-        background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid rgba(56, 70, 112, 0.3);
-      }
-
-      .nav-item {
-        transition: all 0.2s ease;
-      }
-
-      .nav-item.active {
-        color: #818cf8;
-      }
-
-      .nav-item:not(.active):hover {
-        color: #c7d2fe;
-      }
-
       /* Mobile navigation inside sidebar */
       .sidebar-mobile-nav {
         display: none;
@@ -327,14 +330,29 @@
           padding: 12px 0;
           border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
+      }
 
-        .mobile-bottom-nav {
-          display: flex;
+      /* Mobile optimizations */
+      @media (max-width: 768px) {
+        body {
+          overflow: auto;
+        }
+
+        #chat-box {
+          padding-bottom: 80px; /* Space for input on mobile */
+        }
+
+        #chat-form {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 20;
         }
       }
     </style>
   </head>
-  <body class="text-gray-200 h-screen flex">
+  <body class="text-gray-200">
     <!-- Sidebar Overlay (mobile only) -->
     <div id="sidebar-overlay" class="md:hidden"></div>
 
@@ -399,6 +417,13 @@
           <i class="fas fa-home text-lg mb-1"></i>
           <span>Home</span>
         </a>
+        <button
+          id="mobile-sidebar-toggle"
+          class="nav-item flex flex-col items-center text-xs"
+        >
+          <i class="fas fa-comments text-lg mb-1"></i>
+          <span>Groups</span>
+        </button>
         <button
           id="mobile-group-info-toggle"
           class="nav-item flex flex-col items-center text-xs"
@@ -555,6 +580,7 @@
       <!-- Chat Form -->
       {% if current_user.is_authenticated %}
       <form
+        novalidate
         id="chat-form"
         class="bg-cosmic-dark/80 backdrop-blur-sm p-4 border-t border-cosmic-border flex items-center gap-3"
       >
@@ -562,7 +588,7 @@
           id="msg-input"
           rows="1"
           class="flex-1 px-4 py-3 rounded-xl bg-cosmic-light text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
-          placeholder="Message # {{ group.name }}"
+          placeholder="Message"
           autocomplete="off"
           required
         ></textarea>
@@ -575,33 +601,10 @@
         </button>
       </form>
       {% endif %}
-
-      <!-- Mobile Bottom Navigation -->
-      <div
-        class="mobile-nav md:hidden flex justify-around items-center py-3 mobile-bottom-nav"
-      >
-        <a
-          href="{{ url_for('home') }}"
-          class="nav-item flex flex-col items-center text-xs"
-        >
-          <i class="fas fa-home text-lg mb-1"></i>
-          <span>Home</span>
-        </a>
-        <a
-          href="{{ url_for('user') }}"
-          class="nav-item flex flex-col items-center text-xs"
-        >
-          <i class="fas fa-user text-lg mb-1"></i>
-          <span>Profile</span>
-        </a>
-      </div>
     </div>
 
     <!-- Group Info Sidebar -->
-    <div
-      id="group-info-sidebar"
-      class="fixed right-0 top-0 bottom-0 w-80 z-30 p-4 overflow-y-auto hidden shadow-lg profile-card"
-    >
+    <div id="group-info-sidebar" class="profile-card">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-indigo-300 flex items-center gap-2">
           <i class="fas fa-info-circle"></i>
@@ -731,15 +734,23 @@
 
       // Group info sidebar toggle
       groupInfoToggle.addEventListener("click", () => {
-        groupInfoSidebar.classList.toggle("hidden");
+        groupInfoSidebar.classList.toggle("open");
+        sidebarOverlay.classList.toggle("open");
       });
 
       mobileGroupInfoToggle.addEventListener("click", () => {
-        groupInfoSidebar.classList.toggle("hidden");
+        groupInfoSidebar.classList.toggle("open");
+        sidebarOverlay.classList.toggle("open");
       });
 
       closeGroupInfo.addEventListener("click", () => {
-        groupInfoSidebar.classList.add("hidden");
+        groupInfoSidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("open");
+      });
+
+      sidebarOverlay.addEventListener("click", () => {
+        groupInfoSidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("open");
       });
 
       // Join room
@@ -841,6 +852,27 @@
       window.addEventListener("beforeunload", () => {
         socket.emit("leave", { room, username: currentUser });
       });
+
+      // Adjust chat container height for mobile
+      function adjustChatHeight() {
+        if (window.innerWidth <= 768) {
+          const header = document.querySelector(".chat-header");
+          const form = document.getElementById("chat-form");
+          const chatBox = document.getElementById("chat-box");
+
+          if (header && form && chatBox) {
+            const headerHeight = header.offsetHeight;
+            const formHeight = form.offsetHeight;
+            const availableHeight =
+              window.innerHeight - headerHeight - formHeight;
+            chatBox.style.height = `${availableHeight}px`;
+          }
+        }
+      }
+
+      // Call on load and resize
+      window.addEventListener("load", adjustChatHeight);
+      window.addEventListener("resize", adjustChatHeight);
     </script>
   </body>
 </html>
