@@ -35,7 +35,28 @@
         font-family: "Inter", sans-serif;
         background: linear-gradient(135deg, #0b1120, #0f172a);
         color: #e2e8f0;
+        background-color: #1a1a2e;
         min-height: 100vh;
+      }
+      /* Fix for mobile flickering */
+      body {
+        background-attachment: fixed;
+      }
+
+      /* Additional optimization for smoother scrolling */
+      body,
+      html {
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
+      }
+
+      /* Hardware acceleration for smoother rendering */
+      .profile-header,
+      .profile-card,
+      .group-card {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000;
       }
       .profile-header {
         background: linear-gradient(

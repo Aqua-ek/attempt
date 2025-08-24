@@ -400,13 +400,6 @@
           <span>Home</span>
         </a>
         <button
-          id="mobile-sidebar-toggle"
-          class="nav-item flex flex-col items-center text-xs"
-        >
-          <i class="fas fa-comments text-lg mb-1"></i>
-          <span>Groups</span>
-        </button>
-        <button
           id="mobile-group-info-toggle"
           class="nav-item flex flex-col items-center text-xs"
         >
@@ -594,20 +587,6 @@
           <i class="fas fa-home text-lg mb-1"></i>
           <span>Home</span>
         </a>
-        <button
-          id="mobile-sidebar-toggle"
-          class="nav-item flex flex-col items-center text-xs"
-        >
-          <i class="fas fa-comments text-lg mb-1"></i>
-          <span>Groups</span>
-        </button>
-        <button
-          id="mobile-group-info-toggle"
-          class="nav-item flex flex-col items-center text-xs"
-        >
-          <i class="fas fa-info-circle text-lg mb-1"></i>
-          <span>Info</span>
-        </button>
         <a
           href="{{ url_for('user') }}"
           class="nav-item flex flex-col items-center text-xs"
@@ -645,7 +624,7 @@
         <h3 class="text-lg font-bold">{{ group.name }}</h3>
         <p class="text-sm text-gray-400 flex items-center gap-1">
           <span class="w-2 h-2 rounded-full bg-green-500"></span>
-          {{ group.members|length }} members online
+          {{ group.members|length }} members
         </p>
       </div>
 
@@ -688,7 +667,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium truncate">{{ member.name }}</p>
-                <p class="text-xs text-gray-400 truncate">Active now</p>
+                <p class="text-xs text-gray-400 truncate">Active</p>
               </div>
               {% if member.name == current_user.name %}
               <span class="text-xs text-gray-400">You</span>

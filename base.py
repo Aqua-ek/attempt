@@ -45,6 +45,7 @@ def update_streak(id):
         now = datetime.now(timezone.utc)
         if streak_user.lastupdate == None or now - streak_user.lastupdate >= timedelta(hours=24):
             streak_user.streaks += 1
+            flash(f"Streak{streak_user.streaks-1}->{streak_user}")
             db.session.commit()
 
 
@@ -370,6 +371,7 @@ def question(group_name):
             db.session.add(newqst)
             db.session.commit()
             flash("Question Sent", "success")
+            return redirect(url_for('group_questions', group_name=group_name))
     else:
         flash("Please Login")
     return render_template("askquestion.html", form=form, available_groups=group)
