@@ -43,9 +43,19 @@ def update_streak(id):
     streak_user = db.session.get(Users, id)
     if streak_user:
         now = datetime.now(timezone.utc)
-        if streak_user.lastupdate == None or now - streak_user.lastupdate >= timedelta(hours=24):
+
+        # Ensure lastupdate is timezone-aware
+        if streak_user.lastupdate is None or (
+            streak_user.lastupdate.tzinfo is None and now -
+                streak_user.lastupdate.replace(
+                    tzinfo=timezone.utc) >= timedelta(hours=24)
+        ) or (
+            streak_user.lastupdate.tzinfo is not None and now -
+                streak_user.lastupdate >= timedelta(hours=24)
+        ):
             streak_user.streaks += 1
-            flash(f"Streak{streak_user.streaks-1}->{streak_user}")
+            streak_user.lastupdate = now
+            flash(f"Streak {streak_user.streaks-1} -> {streak_user.streaks}")
             db.session.commit()
 
 
@@ -204,7 +214,7 @@ def join(group_id):
     group = Groups.query.filter_by(group_id=group_id, isapproved=True).first()
     user = Users.query.filter_by(name=current_user.name).first()
     if group not in user.groups:
-        flash("Successfully added", "success")
+        flash("Successfully Joined", "success")
         user.groups.append(group)
         db.session.commit()
     else:
