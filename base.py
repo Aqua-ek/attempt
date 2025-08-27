@@ -79,6 +79,23 @@ def serialize_groups(g):
     }
 
 
+def serialize_questions(q, net_count, has_upvoted, has_downvoted):
+    return {
+        "qstid": q.qstid,
+        "qsttime": q.qsttime,
+        "qsttitle": q.qsttitle,
+        "qstcontent": q.qstcontent,
+        "senderid": q.senderid,
+        "groupid": q.groupid,
+        "isaprroved": q.isapproved,
+        "isdeleted": q.isdeleted,
+        "deletedwhen": q.deletedwhen,
+        "displayed_question": q.displayed_question,
+        "displayed_question_title": q.displayed_question_title
+
+    }
+
+
 @app.route("/user")
 def user():
     if current_user.is_authenticated == False:
@@ -189,23 +206,23 @@ def create():
 @app.route("/groups")
 def show_groups():
     if current_user.is_authenticated:
-        cache_keys = "displayed_groups_for_users"
-        cached = r.get(cache_keys)
+        group_cache_keys = f"displayed_groups_for_users:{current_user.id}"
+        cached = r.get(group_cache_keys)
+        print(cached)
         if cached:
             groups = json.loads(cached)
-            print("attempt")
         else:
-
             groups = Groups.query.filter_by(isapproved=True).all()
             m_group = Users.query.filter_by(name=current_user.name).first()
             group = set(groups).difference(set(m_group.groups))
             user_group = list(group)
             queried_group = [serialize_groups(g) for g in user_group]
-            r.setex
-            ("displayed_groups_for_users",
-             300, json.dumps(queried_group))
+            groups = queried_group
+            print('failed')
+            r.setex(group_cache_keys, 300, json.dumps(groups))
+            print('bummy')
 
-    return render_template("groups.html", groups=queried_group)
+    return render_template("groups.html", groups=groups)
 
 
 @app.route("/join_group/<int:group_id>", methods=["POST", "GET"])
@@ -274,8 +291,18 @@ def approve(group_id):
 @app.route("/my_groups")
 def my_group():
     if current_user.is_authenticated:
-        m_group = Users.query.filter_by(name=current_user.name).first()
-        groups = m_group.groups
+        mygroup_cache_key = f"{current_user.id}_groups"
+        cached = r.get(mygroup_cache_key)
+        if cached:
+            groups = json.loads(cached)
+            print("Shazam")
+        else:
+            m_group = Users.query.filter_by(name=current_user.name).first()
+            groups = m_group.groups
+            pers_groups = [serialize_groups(g) for g in groups]
+            groups = pers_groups
+            r.setex(mygroup_cache_key, 300, json.dumps(groups))
+            print(type(groups))
 
         return render_template("my_group.html", groups=groups)
     else:
@@ -396,43 +423,50 @@ def group_questions(group_name):
     if not questedgroup:
         flash("Group Does Not Exist")
         return redirect(url_for("home"))
+    question_cache_key = f"group_question{questedgroup.name}"
+    cached = r.get(question_cache_key)
+    if cached:
+        questions_with_votes = json.dumps(cached)
+        print("from_cache")
+    else:
 
-    # Get all questions for this group with vote counts
-    group_questions = (
-        db.session.query(
-            Questions, func.coalesce(
-                func.sum(Votes.value), 0).label("net_count")
+        # Get all questions for this group with vote counts
+        group_questions = (
+            db.session.query(
+                Questions, func.coalesce(
+                    func.sum(Votes.value), 0).label("net_count")
+            )
+            .outerjoin(Votes, Votes.questid == Questions.qstid)
+            .filter(Questions.groupid == questedgroup.group_id, or_(Questions.isdeleted.is_(False), Questions.isdeleted.is_(None)))
+            .group_by(Questions.qstid)
+            .order_by(Questions.qsttime.desc())  # Optional: newest first
+            .all()
         )
-        .outerjoin(Votes, Votes.questid == Questions.qstid)
-        .filter(Questions.groupid == questedgroup.group_id, or_(Questions.isdeleted.is_(False), Questions.isdeleted.is_(None)))
-        .group_by(Questions.qstid)
-        .order_by(Questions.qsttime.desc())  # Optional: newest first
-        .all()
-    )
-
-    print(group_questions)
+        print(group_questions)
 
     # Fetch approved groups for sidebar/menu
-    user_groups = current_user.groups if current_user.is_authenticated else None
+        user_groups = current_user.groups if current_user.is_authenticated else None
 
-    # Prepare data with user's vote status
-    questions_with_votes = []
-    for question, net_count in group_questions:
-        user_vote = None
-        if current_user.is_authenticated:
-            vote = Votes.query.filter_by(
-                questid=question.qstid, userid=current_user.id
-            ).first()
-            user_vote = vote.value if vote else None
+        # Prepare data with user's vote status
+        questions_with_votes = []
+        for question, net_count in group_questions:
+            user_vote = None
+            if current_user.is_authenticated:
+                vote = Votes.query.filter_by(
+                    questid=question.qstid, userid=current_user.id
+                ).first()
+                user_vote = vote.value if vote else None
 
-        questions_with_votes.append(
-            {
-                "question": question,
-                "net_count": net_count,
-                "has_upvoted": user_vote == 1,
-                "has_downvoted": user_vote == -1,
-            }
-        )
+            questions_with_votes.append(
+                {
+                    "question": question,
+                    "net_count": net_count,
+                    "has_upvoted": user_vote == 1,
+                    "has_downvoted": user_vote == -1,
+                }
+            )
+            r.setex(question_cache_key, 300, json.dumps(questions_with_votes))
+            print("not from")
 
     return render_template(
         "question_display.html",
