@@ -222,14 +222,17 @@ def show_groups():
             groups = json.loads(cached)
         else:
             groups = Groups.query.filter_by(isapproved=True).all()
-            m_group = Users.query.filter_by(name=current_user.name).first()
-            group = set(groups).difference(set(m_group.groups))
+            m_group = current_user.groups
+            group = set(groups).difference(set(m_group))
             user_group = list(group)
             queried_group = [serialize_groups(g) for g in user_group]
             groups = queried_group
             print('failed')
             r.setex(group_cache_keys, 300, json.dumps(groups))
-            print('bummy')
+            for g in [serialize_groups(g) for g in Groups.query.all()]:
+                r.hset(f"group_name_by_id", g["group_id"], g["name"])
+                r.hset(f"group_id_by_name", g["name"], g["group_id"])
+
     else:
         if all_g_cached:
             groups = json.loads(all_g_cached)
@@ -248,10 +251,10 @@ def join(group_id):
         flash("You are not logged in", "warning")
         return redirect(url_for("login"))
     group = Groups.query.filter_by(group_id=group_id, isapproved=True).first()
-    user = Users.query.filter_by(name=current_user.name).first()
+
     if group not in user.groups:
         flash("Successfully Joined", "success")
-        user.groups.append(group)
+        current_user.groups.append(group)
         db.session.commit()
     else:
         flash("Already a member", "error")
@@ -297,7 +300,8 @@ def show_pending_groups():
 def approve(group_id):
     if current_user.is_authenticated and current_user.name == "Aquaderue":
         group = db.session.get(Groups, group_id)
-        group.isapproved = True
+        if group:
+            group.isapproved = True
 
         db.session.commit()
         flash("Group Approved", "success")
@@ -312,14 +316,13 @@ def my_group():
         cached = r.get(mygroup_cache_key)
         if cached:
             groups = json.loads(cached)
-            print("Shazam")
+            print('from cache')
         else:
-            m_group = Users.query.filter_by(name=current_user.name).first()
-            groups = m_group.groups
+            groups = current_user.groups
             pers_groups = [serialize_groups(g) for g in groups]
             groups = pers_groups
             r.setex(mygroup_cache_key, 300, json.dumps(groups))
-            print(type(groups))
+            print("Not")
 
         return render_template("my_group.html", groups=groups)
     else:
@@ -411,8 +414,16 @@ def question(group_name):
     if current_user.is_authenticated:
         form = Question()
         group = Groups.query.filter_by(isapproved=True).all()
-        questedgroup = Groups.query.filter_by(
-            name=group_name, isapproved=True).first()
+
+        questedgroup = r.hget("group_id_by_name", group_name)
+        print(questedgroup)
+
+        if questedgroup:
+            print("Achieved")
+        if not questedgroup:
+            "had to hit the db"
+            questedgroup = Groups.query.filter_by(
+                name=group_name, isapproved=True).first()
         if form.validate_on_submit():
 
             title = form.questiontitle.data
@@ -465,7 +476,6 @@ def group_questions(group_name):
 
     # Fetch approved groups for sidebar/menu
         user_groups = current_user.groups if current_user.is_authenticated else None
-        print(user_groups)
 
         # Prepare data with user's vote status
         questions_votes = []
@@ -581,7 +591,7 @@ def question_answers(qstid):
 
 @app.route("/upvote/<questid>", methods=["POST"])
 def upvote(questid):
-    qst = Questions.query.filter_by(qstid=questid).first_or_404()
+    qst = db.session.get(Questions, qstid=questid)
     new_vote = Votes.query.filter_by(
         userid=current_user.id, questid=questid).first()
 
