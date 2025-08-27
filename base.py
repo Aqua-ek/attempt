@@ -17,9 +17,8 @@ import json
 app = Flask(__name__)
 # csrf.init_app(app)
 migrate = Migrate(app, db)
-r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=False)
-r.set('unc', 'mary')
-print(r.get('unc'))
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
 
 app.secret_key = "12345"
 app.config["SQLALCHEMY_DATABASE_URI"] = (
@@ -82,7 +81,7 @@ def serialize_groups(g):
 def serialize_questions(q, net_count, has_upvoted, has_downvoted):
     return {
         "qstid": q.qstid,
-        "qsttime": q.qsttime,
+        "qsttime": q.qsttime.strftime("%b,%d,%Y"),
         "qsttitle": q.qsttitle,
         "qstcontent": q.qstcontent,
         "senderid": q.senderid,
@@ -91,7 +90,14 @@ def serialize_questions(q, net_count, has_upvoted, has_downvoted):
         "isdeleted": q.isdeleted,
         "deletedwhen": q.deletedwhen,
         "displayed_question": q.displayed_question,
-        "displayed_question_title": q.displayed_question_title
+        "displayed_question_title": q.
+        displayed_question_title,
+        "sender_name": q.sender.name,
+        "net_count": net_count,
+        "has_upvoted": has_upvoted,
+        "has_downvoted": has_downvoted,
+        "answer_length": len(q.answers),
+        "group_name": q.group.name
 
     }
 
@@ -205,10 +211,13 @@ def create():
 
 @app.route("/groups")
 def show_groups():
+    all_group_cache = "all_groups"
+    all_g_cached = r.get(all_group_cache)
     if current_user.is_authenticated:
         group_cache_keys = f"displayed_groups_for_users:{current_user.id}"
+
         cached = r.get(group_cache_keys)
-        print(cached)
+        print("cached info")
         if cached:
             groups = json.loads(cached)
         else:
@@ -221,6 +230,14 @@ def show_groups():
             print('failed')
             r.setex(group_cache_keys, 300, json.dumps(groups))
             print('bummy')
+    else:
+        if all_g_cached:
+            groups = json.loads(all_g_cached)
+            print('from_cache')
+        else:
+            groups = [serialize_groups(g) for g in Groups.query.all()]
+            print("not from")
+            r.setex(all_group_cache, 600, json.dumps(groups))
 
     return render_template("groups.html", groups=groups)
 
@@ -426,7 +443,7 @@ def group_questions(group_name):
     question_cache_key = f"group_question{questedgroup.name}"
     cached = r.get(question_cache_key)
     if cached:
-        questions_with_votes = json.dumps(cached)
+        questions_with_votes = json.loads(cached)
         print("from_cache")
     else:
 
@@ -443,12 +460,15 @@ def group_questions(group_name):
             .all()
         )
         print(group_questions)
+        if not group_questions:
+            questions_with_votes = []
 
     # Fetch approved groups for sidebar/menu
         user_groups = current_user.groups if current_user.is_authenticated else None
+        print(user_groups)
 
         # Prepare data with user's vote status
-        questions_with_votes = []
+        questions_votes = []
         for question, net_count in group_questions:
             user_vote = None
             if current_user.is_authenticated:
@@ -457,7 +477,7 @@ def group_questions(group_name):
                 ).first()
                 user_vote = vote.value if vote else None
 
-            questions_with_votes.append(
+            questions_votes.append(
                 {
                     "question": question,
                     "net_count": net_count,
@@ -465,13 +485,15 @@ def group_questions(group_name):
                     "has_downvoted": user_vote == -1,
                 }
             )
+            questions_with_votes = [serialize_questions(
+                q["question"], q["net_count"], q["has_upvoted"], q['has_downvoted']) for q in questions_votes]
             r.setex(question_cache_key, 300, json.dumps(questions_with_votes))
             print("not from")
 
     return render_template(
         "question_display.html",
         group=questedgroup,
-        user_groups=user_groups,
+        user_groups=current_user.groups if current_user.is_authenticated else [],
         questions_with_votes=questions_with_votes,
     )
 
