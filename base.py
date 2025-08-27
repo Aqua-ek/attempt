@@ -10,17 +10,25 @@ from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from ext import login_manager, socketio
 from flask_login import login_user, login_required, current_user, logout_user
+import redis
+import pickle
+import json
 
 app = Flask(__name__)
 # csrf.init_app(app)
 migrate = Migrate(app, db)
-
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=False)
+r.set('unc', 'mary')
+print(r.get('unc'))
 
 app.secret_key = "12345"
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "postgresql://postgres:mypasscode@localhost/User"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["CACHE_TYPE"] = "RedisCache"
+app.config["CACHE_REDIS_URL"] = "redis://localhost:6379/0"
+
 
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -59,27 +67,27 @@ def update_streak(id):
             db.session.commit()
 
 
+def serialize_groups(g):
+    return {
+        "group_id": g.group_id,
+        "name": g.name,
+        "datecreated": g.datecreated.strftime("%b,%d,%Y"),
+        "groupdesc": g.groupdesc,
+        "isapproved": g.isapproved,
+        "message_count": len(g.messages),
+        "question_count": len(g.questions)
+    }
+
+
 @app.route("/user")
 def user():
     if current_user.is_authenticated == False:
         return redirect("login")
     session["username"] = current_user.name
-    user = Users.query.filter_by(name=current_user.name).first()
-    msg_amt = db.session.query(Messages).filter_by(
-        senderid=current_user.id).count()
-    gp_amt = len(user.groups)
-    qst_amt = db.session.query(Questions).filter_by(
-        senderid=current_user.id).count()
+    user = Users.query.get(current_user.id)
     return render_template(
         "user.html",
         user=user,
-        recent_groups=user.groups,
-        msg_amt=msg_amt,
-        gp_amt=gp_amt,
-        qst_amt=qst_amt,
-        question=db.session.query(Questions)
-        .filter_by(senderid=current_user.id)
-        .count(),
     )
 
 
@@ -89,24 +97,10 @@ def other_status(user_name):
     #     return redirect("login")
     # session["username"] = current_user.name
     user = Users.query.filter_by(name=user_name).first()
-    msg_amt = len(user.messages)
-    gp_amt = len(user.groups)
-    qst_amt = len(user.questions)
-    my_groups = current_user.groups if current_user.is_authenticated else []
-    other_groups = user.groups
-    answ_num = len(user.questions)
-
-    together = set(my_groups).difference(set(other_groups))
-    together = list(together)
 
     return render_template(
         "check_else.html",
         user=user,
-        together=together,
-        msg_amt=msg_amt,
-        gp_amt=gp_amt,
-        qst_amt=qst_amt,
-        answ_num=answ_num,
     )
 
 
@@ -194,16 +188,24 @@ def create():
 
 @app.route("/groups")
 def show_groups():
-    tag = Tags.query.all()
     if current_user.is_authenticated:
-        groups = Groups.query.filter_by(isapproved=True).all()
-        m_group = Users.query.filter_by(name=current_user.name).first()
-        group = set(groups).difference(set(m_group.groups))
-        group = list(group)
-    else:
-        group = Groups.query.all()
+        cache_keys = "displayed_groups_for_users"
+        cached = r.get(cache_keys)
+        if cached:
+            groups = json.loads(cached)
+            print("attempt")
+        else:
 
-    return render_template("groups.html", groups=group)
+            groups = Groups.query.filter_by(isapproved=True).all()
+            m_group = Users.query.filter_by(name=current_user.name).first()
+            group = set(groups).difference(set(m_group.groups))
+            user_group = list(group)
+            queried_group = [serialize_groups(g) for g in user_group]
+            r.setex
+            ("displayed_groups_for_users",
+             300, json.dumps(queried_group))
+
+    return render_template("groups.html", groups=queried_group)
 
 
 @app.route("/join_group/<int:group_id>", methods=["POST", "GET"])
@@ -407,6 +409,7 @@ def group_questions(group_name):
         .order_by(Questions.qsttime.desc())  # Optional: newest first
         .all()
     )
+
     print(group_questions)
 
     # Fetch approved groups for sidebar/menu
@@ -703,12 +706,21 @@ def downvoteanswer(questid, ansid):
 
 @app.route("/add_tags/<int:groupid>")
 def add_tags_page(groupid):
+    cache_keys = "all_tags"
+    cached = r.get(cache_keys)
+
+    if cached:
+        tags = json.loads(cached)
+        print("Ts was cached")
+    else:
+        tags = Tags.query.all()
+        tags = [{"tagid": t.tagid, "tag_name": t.tag_name} for t in tags]
+        r.setex(cache_keys, 3000, json.dumps(tags))
     group = db.session.get(Groups, groupid)
     if not group:
         return "Group not found", 404
 
     # Fetch all tags for display
-    tags = Tags.query.all()
 
     return render_template("add_tags.html", group=group, tags=tags)
 
@@ -737,6 +749,7 @@ def delete(type, id):
 
 @app.route("/add_tag/<int:groupid>/<int:tagid>", methods=["POST"])
 def addtag(groupid, tagid):
+
     group = db.session.get(Groups, groupid)
     tag = db.session.get(Tags, tagid)
 

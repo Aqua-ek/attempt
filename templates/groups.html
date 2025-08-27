@@ -536,9 +536,7 @@
                       </span>
                       <span class="pl-2 flex items-center gap-1">
                         <i class="fas fa-calendar-alt"></i>
-                        <span
-                          >{{ group.datecreated.strftime("%b %d, %Y") }}</span
-                        >
+                        <span>{{ group.datecreated }}</span>
                       </span>
                     </div>
                   </div>
@@ -565,14 +563,14 @@
                     class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 ripple"
                   >
                     <i class="fas fa-question-circle"></i> Questions ({{
-                    group.questions|length }})
+                    group.question_count }})
                   </a>
                   <a
                     href="{{ url_for('chat', group_name=group.name) }}"
                     class="btn-secondary text-sm text-white px-4 py-2 rounded-lg flex-1 text-center flex items-center justify-center gap-2 ripple"
                   >
                     <i class="fas fa-comment-dots"></i> Chat ({{
-                    group.messages|length }})
+                    group.message_count }})
                   </a>
                 </div>
                 <div class="mt-3">
