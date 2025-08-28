@@ -577,7 +577,7 @@
           {% if user.questions|length > 0 %} {% for question in
           user.questions[-3:]|reverse %}
           <a
-            href="{{ url_for('group_questions', group_name=question.group.name) }}"
+            href="{{ url_for('group_questions', group_id=question.groupid) }}"
             class="question-card block p-4 rounded-lg border border-slate-800"
           >
             <h3 class="font-medium text-sm text-slate-100">

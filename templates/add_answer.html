@@ -820,7 +820,7 @@
             <span class="nav-text">Home</span>
           </a>
           <a
-            href="{{ url_for('group_questions',group_name=question.group.name)}}"
+            href="{{ url_for('group_questions',group_id=question.groupid)}}"
             class="nav-item"
           >
             <span class="nav-icon"><i class="fas fa-users"></i></span>
@@ -969,7 +969,7 @@
                   </span>
                   {% if question.group %}
                   <a
-                    href="{{ url_for('group_questions', group_name=question.group.name) }}"
+                    href="{{ url_for('group_questions', group_id=question.groupid) }}"
                     class="text-indigo-300 hover:underline"
                     ><i class="fas fa-users mr-1"></i>{{ question.group.name }}
                   </a>
@@ -1064,14 +1064,14 @@
 
           {% if answer_hold %}
           <div class="space-y-3" id="answers-list">
-            {% for answer_data in answer_hold %} {% set answer =
-            answer_data.answer %} {% set net_count = answer_data.net_count %} {%
-            set has_upvoted = answer_data.has_upvoted %} {% set has_downvoted =
+            {% for answer_data in answer_hold %} {% set answer = answer_data %}
+            {% set net_count = answer_data.net_count %} {% set has_upvoted =
+            answer_data.has_upvoted %} {% set has_downvoted =
             answer_data.has_downvoted %}
             <div
               class="answer-card rounded p-3 {% if loop.first %}highlight{% endif %}"
               id="answer-{{ answer.answid }}"
-              data-time="{{ answer.anstime.timestamp() if answer.anstime else '' }}"
+              data-time="{{ answer.anstime if answer.anstime else '' }}"
               data-votes="{{ net_count }}"
             >
               <div class="flex">
@@ -1131,11 +1131,8 @@
                         {{ answer.sender.name if answer.sender else 'Unknown' }}
                       </a>
                       <span class="text-xs text-gray-400 ml-2">
-                        <span
-                          class="time-ago"
-                          data-time="{{ answer.anstime.isoformat() }}"
-                        >
-                          {{ answer.anstime.strftime('%b %d, %Y at %H:%M') }}
+                        <span class="time-ago" data-time="{{ answer.anstime }}">
+                          {{ answer.anstime }}
                         </span>
                       </span>
                     </div>
@@ -1158,7 +1155,7 @@
                       <i class="far fa-bookmark mr-1"></i> Save
                     </button>
                     {% if current_user.is_authenticated and current_user.id ==
-                    answer.sender.id and not answer.isdeleted %}
+                    answer.senderid and not answer.isdeleted %}
                     <button class="hover:text-indigo-300">
                       <i class="fas fa-edit mr-1"></i> Edit
                     </button>

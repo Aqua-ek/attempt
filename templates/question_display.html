@@ -283,7 +283,7 @@
         <div class="space-y-1 overflow-y-auto max-h-[70vh]">
           {% if user_groups %} {% for g in user_groups %}
           <a
-            href="{{ url_for('group_questions', group_name=g.name) }}"
+            href="{{ url_for('group_questions', group_id=g.group_id) }}"
             class="group-item flex items-center px-3 py-3 rounded-md text-sm font-medium {{ 'active-group text-white' if g.name == group.name else 'text-gray-300 hover:text-white' }}"
           >
             <div
@@ -349,7 +349,7 @@
             {% if user_groups %}
             {% for g in user_groups %}
             <a
-              href="{{ url_for('group_questions', group_name=g.name) }}"
+              href="{{ url_for('group_questions', group_id=g.group_id) }}"
               class="group-item flex items-center px-3 py-3 rounded-md text-sm font-medium {{ 'active-group text-white' if g.name == group.name else 'text-gray-300 hover:text-white' }}"
             >
               <div

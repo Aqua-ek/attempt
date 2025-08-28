@@ -102,6 +102,27 @@ def serialize_questions(q, net_count, has_upvoted, has_downvoted):
     }
 
 
+def serialize_answers(a, net_count, has_upvoted, has_downvoted):
+    return {
+        "answid": a.answid,
+        "anstime": a.anstime.strftime("%b,%d,%Y"),
+        "anscontent": a.anscontent,
+        "senderid": a.senderid,
+        "groupid": a.groupid,
+        "isaprroved": a.isapproved,
+        "isdeleted": a.isdeleted,
+        "deletedwhen": a.deletedwhen.strftime("%b,%d,%Y") if a.deletedwhen else "",
+        "displayed_answer": a.displayed_answer,
+        "sender_name": a.sender.name,
+        "net_count": net_count,
+        "has_upvoted": has_upvoted,
+        "has_downvoted": has_downvoted,
+
+        "group_name": a.group.name
+
+    }
+
+
 @app.route("/user")
 def user():
     if current_user.is_authenticated == False:
@@ -444,18 +465,22 @@ def question(group_name):
     return render_template("askquestion.html", form=form, available_groups=group)
 
 
-@app.route("/showquestions/<group_name>", methods=["GET", "POST"])
-def group_questions(group_name):
-    questedgroup = Groups.query.filter_by(
-        name=group_name).first()
+@app.route("/showquestions/<group_id>", methods=["GET", "POST"])
+def group_questions(group_id):
+    questedgroup = db.session.query(Groups).get(group_id)
+
     if not questedgroup:
         flash("Group Does Not Exist")
         return redirect(url_for("home"))
     question_cache_key = f"group_question{questedgroup.name}"
+    net_count_cache_key = f"group_net_votes{questedgroup.name}"
+    net_cache = r.get(net_count_cache_key)
     cached = r.get(question_cache_key)
     if cached:
         questions_with_votes = json.loads(cached)
         print("from_cache")
+    if net_cache:
+        net_vote_count = json.loads(net_cache)
     else:
 
         # Get all questions for this group with vote counts
@@ -470,7 +495,6 @@ def group_questions(group_name):
             .order_by(Questions.qsttime.desc())  # Optional: newest first
             .all()
         )
-        print(group_questions)
         if not group_questions:
             questions_with_votes = []
 
@@ -497,7 +521,7 @@ def group_questions(group_name):
             )
             questions_with_votes = [serialize_questions(
                 q["question"], q["net_count"], q["has_upvoted"], q['has_downvoted']) for q in questions_votes]
-            r.setex(question_cache_key, 300, json.dumps(questions_with_votes))
+            r.setex(question_cache_key, 30, json.dumps(questions_with_votes))
             print("not from")
 
     return render_template(
@@ -511,15 +535,9 @@ def group_questions(group_name):
 @app.route("/answerquestions/<int:qstid>", methods=["POST", "GET"])
 def question_answers(qstid):
     question = Questions.query.get_or_404(qstid)
-
-    question_vote_count = (
-        db.session.query(func.sum(Votes.value)).filter_by(
-            questid=qstid).scalar() or 0
-    )
-
-    prior_quest = Questions.query.filter_by(qstid=qstid).first()
-    print(prior_quest)
+    print(question)
     group = question.groupid
+    prior_quest = Questions.query.filter_by(qstid=qstid).first()
 
     form = Answer()
     if not question:
@@ -534,48 +552,83 @@ def question_answers(qstid):
         db.session.add(new_answer)
         db.session.commit()
         return redirect(url_for("question_answers", qstid=qstid))
+    answer_cache_keys = f"cache_keys_for_answer{question.qstid}"
+    answer_cache = r.get(answer_cache_keys)
 
-    question_has_upvoted = False
-    question_has_downvoted = False
-    if current_user.is_authenticated:
-        user_vote = Votes.query.filter_by(
-            questid=qstid, userid=current_user.id).first()
-        if user_vote:
-            question_has_upvoted = user_vote.value == 1
-            question_has_downvoted = user_vote.value == -1
-
-    answers = (
-        Answers.query.filter_by(qstid=question.qstid)
-        .order_by(Answers.anstime.desc())
-        .all()
-    )
-    answer_hold = []
-    answ_count = (
-        db.session.query(
-            Answers, func.coalesce(
-                func.sum(Ansvotes.value), 0).label("net_count")
+    if answer_cache:
+        question_vote_count = (
+            db.session.query(func.sum(Votes.value)).filter_by(
+                questid=qstid).scalar() or 0
         )
-        .outerjoin(Ansvotes, Ansvotes.answid == Answers.answid)
-        .filter(Answers.qstid == question.qstid)
-        .group_by(Answers.answid)
-        .order_by(Answers.anstime.desc())  # Optional: newest first
-        .all()
-    )
-    for answer, net_count in answ_count:
-        user_vote = None
+
+        answers = (
+            Answers.query.filter_by(qstid=question.qstid)
+            .order_by(Answers.anstime.desc())
+            .all()
+        )
+
+        question_has_upvoted = False
+        question_has_downvoted = False
         if current_user.is_authenticated:
-            vote = Ansvotes.query.filter_by(
-                answid=answer.answid, userid=current_user.id
-            ).first()
-            user_vote = vote.value if vote else None
-        answer_hold.append(
-            {
-                "answer": answer,
-                "net_count": net_count,
-                "has_upvoted": user_vote == 1,
-                "has_downvoted": user_vote == -1,
-            }
+            user_vote = Votes.query.filter_by(
+                questid=qstid, userid=current_user.id).first()
+            if user_vote:
+                question_has_upvoted = user_vote.value == 1
+                question_has_downvoted = user_vote.value == -1
+        answer_hold = json.loads(answer_cache)
+        print("seen from cache")
+    else:
+
+        question_vote_count = (
+            db.session.query(func.sum(Votes.value)).filter_by(
+                questid=qstid).scalar() or 0
         )
+
+        question_has_upvoted = False
+        question_has_downvoted = False
+        if current_user.is_authenticated:
+            user_vote = Votes.query.filter_by(
+                questid=qstid, userid=current_user.id).first()
+            if user_vote:
+                question_has_upvoted = user_vote.value == 1
+                question_has_downvoted = user_vote.value == -1
+
+        answers = (
+            Answers.query.filter_by(qstid=question.qstid)
+            .order_by(Answers.anstime.desc())
+            .all()
+        )
+        answer_hold_dic = []
+        answ_count = (
+            db.session.query(
+                Answers, func.coalesce(
+                    func.sum(Ansvotes.value), 0).label("net_count")
+            )
+            .outerjoin(Ansvotes, Ansvotes.answid == Answers.answid)
+            .filter(Answers.qstid == question.qstid)
+            .group_by(Answers.answid)
+            .order_by(Answers.anstime.desc())  # Optional: newest first
+            .all()
+        )
+        for answer, net_count in answ_count:
+            user_vote = None
+            if current_user.is_authenticated:
+                vote = Ansvotes.query.filter_by(
+                    answid=answer.answid, userid=current_user.id
+                ).first()
+                user_vote = vote.value if vote else None
+            answer_hold_dic.append(
+                {
+                    "answer": answer,
+                    "net_count": net_count,
+                    "has_upvoted": user_vote == 1,
+                    "has_downvoted": user_vote == -1,
+                }
+            )
+            answer_hold = [serialize_answers(
+                a["answer"], a["net_count"], a["has_upvoted"], a["has_downvoted"]) for a in answer_hold_dic]
+            r.setex(answer_cache_keys, 300, json.dumps(answer_hold))
+        print('not from cache')
 
     return render_template(
         "add_answer.html",
@@ -591,7 +644,7 @@ def question_answers(qstid):
 
 @app.route("/upvote/<questid>", methods=["POST"])
 def upvote(questid):
-    qst = db.session.get(Questions, qstid=questid)
+    qst = Questions.query.filter_by(qstid=questid).first_or_404()
     new_vote = Votes.query.filter_by(
         userid=current_user.id, questid=questid).first()
 
