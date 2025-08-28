@@ -266,7 +266,7 @@
         >
           {% for group in available_groups %}
           <a
-            href="{{ url_for('group_questions', group_name=group.name) }}"
+            href="{{ url_for('group_questions', group_id=group.group_id) }}"
             class="group-card block rounded-lg p-3 animate-fade-in"
             style="animation-delay: {{ loop.index * 0.05 }}s"
           >

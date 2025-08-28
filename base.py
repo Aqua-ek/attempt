@@ -78,7 +78,7 @@ def serialize_groups(g):
     }
 
 
-def serialize_questions(q, net_count, has_upvoted, has_downvoted):
+def serialize_questions(q):
     return {
         "qstid": q.qstid,
         "qsttime": q.qsttime.strftime("%b,%d,%Y"),
@@ -93,9 +93,6 @@ def serialize_questions(q, net_count, has_upvoted, has_downvoted):
         "displayed_question_title": q.
         displayed_question_title,
         "sender_name": q.sender.name,
-        "net_count": net_count,
-        "has_upvoted": has_upvoted,
-        "has_downvoted": has_downvoted,
         "answer_length": len(q.answers),
         "group_name": q.group.name
 
@@ -121,6 +118,37 @@ def serialize_answers(a, net_count, has_upvoted, has_downvoted):
         "group_name": a.group.name
 
     }
+
+
+def get_question_vote_totals(group_id):
+    """Get vote totals for all questions in a group as a HashMap"""
+    vote_totals = (
+        db.session.query(
+            Votes.questid,
+            func.coalesce(func.sum(Votes.value), 0).label("net_count")
+        )
+        .outerjoin(Questions, Questions.qstid == Votes.questid)
+        .filter(Questions.groupid == group_id)
+        .group_by(Votes.questid)
+        .all()
+    )
+    return {v.questid: v.net_count for v in vote_totals}
+
+
+def get_user_vote_status(user_id, question_ids):
+    """Get user's vote status for multiple questions as a HashMap"""
+    if not question_ids:
+        return {}
+
+    user_votes = (
+        db.session.query(Votes.questid, Votes.value)
+        .filter(
+            Votes.questid.in_(question_ids),
+            Votes.userid == user_id
+        )
+        .all()
+    )
+    return {uv.questid: uv.value for uv in user_votes}
 
 
 @app.route("/user")
@@ -432,19 +460,12 @@ def handle_sent_message(data):
 
 @app.route("/question/<group_name>", methods=["GET", "POST"])
 def question(group_name):
+    form = Question()
+    group = Groups.query.filter_by(isapproved=True).all()
     if current_user.is_authenticated:
-        form = Question()
-        group = Groups.query.filter_by(isapproved=True).all()
 
-        questedgroup = r.hget("group_id_by_name", group_name)
-        print(questedgroup)
-
-        if questedgroup:
-            print("Achieved")
-        if not questedgroup:
-            "had to hit the db"
-            questedgroup = Groups.query.filter_by(
-                name=group_name, isapproved=True).first()
+        questedgroup = Groups.query.filter_by(
+            name=group_name, isapproved=True).first()
         if form.validate_on_submit():
 
             title = form.questiontitle.data
@@ -454,14 +475,17 @@ def question(group_name):
                 qsttitle=title,
                 qstcontent=description,
                 senderid=current_user.id,
-                groupid=questedgroup.group_id,
+                groupid=int(questedgroup.group_id),
             )
             db.session.add(newqst)
             db.session.commit()
+            r.delete(f"group_questions{questedgroup.name}")
             flash("Question Sent", "success")
-            return redirect(url_for('group_questions', group_name=group_name))
+            return redirect(url_for('group_questions', group_id=questedgroup.group_id))
     else:
+
         flash("Please Login")
+        return redirect(url_for('login'))
     return render_template("askquestion.html", form=form, available_groups=group)
 
 
@@ -473,62 +497,58 @@ def group_questions(group_id):
         flash("Group Does Not Exist")
         return redirect(url_for("home"))
     question_cache_key = f"group_question{questedgroup.name}"
-    net_count_cache_key = f"group_net_votes{questedgroup.name}"
-    net_cache = r.get(net_count_cache_key)
+
+    user_groups = current_user.groups if current_user.is_authenticated else None
+
     cached = r.get(question_cache_key)
     if cached:
-        questions_with_votes = json.loads(cached)
+        group_questions = json.loads(cached)
         print("from_cache")
-    if net_cache:
-        net_vote_count = json.loads(net_cache)
     else:
 
         # Get all questions for this group with vote counts
-        group_questions = (
-            db.session.query(
-                Questions, func.coalesce(
-                    func.sum(Votes.value), 0).label("net_count")
-            )
-            .outerjoin(Votes, Votes.questid == Questions.qstid)
-            .filter(Questions.groupid == questedgroup.group_id, or_(Questions.isdeleted.is_(False), Questions.isdeleted.is_(None)))
-            .group_by(Questions.qstid)
-            .order_by(Questions.qsttime.desc())  # Optional: newest first
-            .all()
-        )
+        questions = (db.session.query(Questions).filter(Questions.groupid == questedgroup.group_id, or_(
+            Questions.isdeleted.is_(False), Questions.isdeleted.is_(None))).order_by(Questions.qsttime.desc()).all())
+        print(questions)
+        group_questions = [serialize_questions(q) for q in questions]
+        r.setex(question_cache_key, 300, json.dumps(group_questions))
         if not group_questions:
             questions_with_votes = []
+            net_vote_count = []
+    net_count_cache_key = f"group_net_votes{questedgroup.name}"
+    net_cache = r.get(net_count_cache_key)
+    if net_cache:
+        ("super")
+        print(questedgroup.name)
+        net_vote_count = json.loads(net_cache)
+        net_vote_count = {int(k): v for k, v in net_vote_count.items()}
 
+        print("gotten_from_net_vote_cache")
+        print(net_vote_count)
+    else:
+        net_cache = get_question_vote_totals(questedgroup.group_id)
+        net_vote_count = net_cache
+
+        r.setex(net_count_cache_key, 30, json.dumps(net_cache))
+        print("not from total cache")
+        print(net_vote_count)
+    user_vote_status = {}
+    if current_user.is_authenticated:
+        question_ids = [q["qstid"] for q in group_questions]
+        user_vote_status = get_user_vote_status(
+            current_user.id, question_ids=question_ids)
     # Fetch approved groups for sidebar/menu
-        user_groups = current_user.groups if current_user.is_authenticated else None
 
         # Prepare data with user's vote status
-        questions_votes = []
-        for question, net_count in group_questions:
-            user_vote = None
-            if current_user.is_authenticated:
-                vote = Votes.query.filter_by(
-                    questid=question.qstid, userid=current_user.id
-                ).first()
-                user_vote = vote.value if vote else None
-
-            questions_votes.append(
-                {
-                    "question": question,
-                    "net_count": net_count,
-                    "has_upvoted": user_vote == 1,
-                    "has_downvoted": user_vote == -1,
-                }
-            )
-            questions_with_votes = [serialize_questions(
-                q["question"], q["net_count"], q["has_upvoted"], q['has_downvoted']) for q in questions_votes]
-            r.setex(question_cache_key, 30, json.dumps(questions_with_votes))
-            print("not from")
-
+    print(net_vote_count)
     return render_template(
         "question_display.html",
         group=questedgroup,
-        user_groups=current_user.groups if current_user.is_authenticated else [],
-        questions_with_votes=questions_with_votes,
+        user_groups=user_groups,
+        group_questions=group_questions,
+        user_vote_status=user_vote_status,
+        net_vote_count=net_vote_count
+
     )
 
 
@@ -610,6 +630,8 @@ def question_answers(qstid):
             .order_by(Answers.anstime.desc())  # Optional: newest first
             .all()
         )
+        if not answ_count:
+            answer_hold = []
         for answer, net_count in answ_count:
             user_vote = None
             if current_user.is_authenticated:
@@ -673,6 +695,12 @@ def upvote(questid):
             questid=questid).scalar()
         or 0
     )
+    if qst:
+        vote_totals_cache_key = f"group_net_votes{qst.group.name}"
+
+        r.delete(vote_totals_cache_key)
+        print("deleted upvote")
+        print(qst.group.name)
 
     return jsonify(
         {
@@ -714,6 +742,11 @@ def downvote(questid):
             questid=questid).scalar()
         or 0
     )
+    if qst:
+        vote_totals_cache_key = f"group_net_votes{qst.group.name}"
+        print("deleted downvote")
+        print(r.delete(vote_totals_cache_key))
+        print(qst.group.name)
 
     return jsonify(
         {
