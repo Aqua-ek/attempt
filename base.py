@@ -102,7 +102,7 @@ def serialize_questions(q):
 def serialize_answers(a):
     return {
         "answid": a.answid,
-        "anstime": a.anstime.strftime("%b,%d,%Y"),
+        "anstime": a.anstime.strftime("%Y-%m-%d %H:%M:%S"),
         "anscontent": a.anscontent,
         "senderid": a.senderid,
         "groupid": a.groupid,
@@ -510,7 +510,7 @@ def question(group_name):
             )
             db.session.add(newqst)
             db.session.commit()
-            r.delete(f"group_questions{questedgroup.name}")
+            r.delete(f"group_question{questedgroup.name}")
             flash("Question Sent", "success")
             return redirect(url_for('group_questions', group_id=questedgroup.group_id))
     else:
@@ -586,9 +586,11 @@ def group_questions(group_id):
 @app.route("/answerquestions/<int:qstid>", methods=["POST", "GET"])
 def question_answers(qstid):
     question = Questions.query.get_or_404(qstid)
+    if question.isdeleted:
+        flash("Question Doesn't Exist")
+        return redirect(url_for('group_questions', group_id=question.groupid))
     print(question)
     group = question.groupid
-    prior_quest = Questions.query.filter_by(qstid=qstid).first()
 
     form = Answer()
     if not question:
@@ -611,7 +613,7 @@ def question_answers(qstid):
 
     if answer_cache:
         answer_hold = json.loads(answer_cache)
-        print("seen from cache")
+
         print("answer_loaded_from_cache")
     else:
 
@@ -634,7 +636,6 @@ def question_answers(qstid):
     if answer_net_cache:
         answers_net_vote = json.loads(answer_net_cache)
         answers_net_vote = {int(k): v for k, v in answers_net_vote.items()}
-        print(answers_net_vote)
         print("ans_count from cache")
     else:
         answers_net_vote = get_answer_vote_totals(question.qstid)
@@ -663,7 +664,6 @@ def question_answers(qstid):
     else:
         question_net_vote = get_question_vote_totals(
             question.group.group_id)
-        print(f"{question_net_vote} apa")
 
         r.setex(question_net_vote_cache_keys, 30,
                 json.dumps(question_net_vote))
@@ -908,9 +908,11 @@ def add_tags_page(groupid):
 def delete(type, id):
     target = None
     qtid = None
+    prev = None
     if type == 'qst':
         prev = db.session.query(Questions).get(id)
-        r.delete(f"group_question{prev.name}")
+        print(f"{prev}soup")
+        print("toon")
         prev.isdeleted = True
         prev.deletedwhen = datetime.now(timezone.utc)
 
@@ -926,8 +928,8 @@ def delete(type, id):
         return redirect(url_for('home'))
 
     db.session.commit()
-
-    (f"cache_keys_for_answer{qtid}")
+    r.delete(f"group_question{prev.group.name}")
+    r.delete((f"cache_keys_for_answer{qtid}"))
     return redirect(url_for('question_answers', qstid=qtid))
 
 

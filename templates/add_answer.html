@@ -1229,309 +1229,309 @@
     </div>
 
     <script>
-      // Sidebar functionality
-      const sidebar = document.getElementById('sidebar');
-      const mainContent = document.getElementById('main-content');
-      const sidebarToggle = document.getElementById('sidebar-toggle');
-      const mobileMenuButton = document.getElementById('mobile-menu-button');
-      const overlay = document.getElementById('overlay');
-      let isSidebarCollapsed = false;
+            // Sidebar functionality
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const overlay = document.getElementById('overlay');
+            let isSidebarCollapsed = false;
 
-      // Toggle sidebar collapse/expand
-      function toggleSidebar() {
-        isSidebarCollapsed = !isSidebarCollapsed;
+            // Toggle sidebar collapse/expand
+            function toggleSidebar() {
+              isSidebarCollapsed = !isSidebarCollapsed;
 
-        if (isSidebarCollapsed) {
-          sidebar.classList.add('collapsed');
-          mainContent.classList.add('expanded');
-          sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        } else {
-          sidebar.classList.remove('collapsed');
-          mainContent.classList.remove('expanded');
-          sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        }
+              if (isSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+              } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+              }
 
-        // Save state to localStorage
-        localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
-      }
-
-      // Toggle mobile sidebar
-      function toggleMobileSidebar() {
-        sidebar.classList.toggle('mobile-open');
-        overlay.classList.toggle('active');
-
-        if (sidebar.classList.contains('mobile-open')) {
-          document.body.style.overflow = 'hidden';
-        } else {
-          document.body.style.overflow = 'auto';
-        }
-      }
-
-      // Initialize sidebar state
-      function initSidebar() {
-        const savedState = localStorage.getItem('sidebarCollapsed');
-
-        // Check if we're on mobile
-        if (window.innerWidth <= 1024) {
-          isSidebarCollapsed = true;
-          sidebar.classList.remove('collapsed');
-          mainContent.classList.remove('expanded');
-          sidebar.classList.remove('mobile-open');
-          overlay.classList.remove('active');
-        } else {
-          isSidebarCollapsed = savedState === 'true';
-
-          if (isSidebarCollapsed) {
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('expanded');
-            sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
-          } else {
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('expanded');
-            sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
-          }
-        }
-      }
-
-      // Event listeners
-      sidebarToggle.addEventListener('click', toggleSidebar);
-      mobileMenuButton.addEventListener('click', toggleMobileSidebar);
-      overlay.addEventListener('click', toggleMobileSidebar);
-
-      // Initialize on load and resize
-      window.addEventListener('load', initSidebar);
-      window.addEventListener('resize', initSidebar);
-
-      // Delete Modal Functionality
-      const deleteModal = document.getElementById('delete-modal');
-      const deleteForm = document.getElementById('delete-form');
-      let currentDeleteType = '';
-      let currentDeleteId = '';
-
-      // Set up all delete buttons
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          currentDeleteType = btn.dataset.type;
-          currentDeleteId = btn.dataset.id;
-
-          // Update the form action to point to the correct delete route
-          deleteForm.action = `/delete/${currentDeleteType}/${currentDeleteId}`;
-
-          // Show the modal
-          deleteModal.classList.add('active');
-        });
-      });
-
-      // Close delete modal when clicking the close button
-      document.getElementById('close-delete-modal').addEventListener('click', () => {
-        deleteModal.classList.remove('active');
-      });
-
-      // Close delete modal when clicking outside
-      deleteModal.addEventListener('click', (e) => {
-        if (e.target === deleteModal) {
-          deleteModal.classList.remove('active');
-        }
-      });
-
-      // Close delete modal with cancel button
-      document.querySelector('#delete-modal .modal-btn-cancel').addEventListener('click', () => {
-        deleteModal.classList.remove('active');
-      });
-
-      // Approve Modal Functionality
-      const approveModal = document.getElementById('approve-modal');
-      const approveForm = document.getElementById('approve-form');
-      const approveModalText = document.getElementById('approve-modal-text');
-      let currentApproveAnswerId = '';
-      let currentIsApproved = false;
-
-      // Function to show approve modal
-      function showApproveModal(button) {
-        currentApproveAnswerId = button.dataset.answerId;
-        currentIsApproved = button.dataset.isApproved === 'true';
-
-        // Update the form action
-        approveForm.action = `/approve_answer/${currentApproveAnswerId}`;
-
-        // Update the modal text based on current state
-        if (currentIsApproved) {
-          approveModalText.textContent = 'Are you sure you want to remove approval from this answer?';
-        } else {
-          approveModalText.textContent = 'Are you sure you want to approve this answer?';
-        }
-
-        // Show the modal
-        approveModal.classList.add('active');
-      }
-
-      // Close approve modal when clicking the close button
-      document.getElementById('close-approve-modal').addEventListener('click', () => {
-        approveModal.classList.remove('active');
-      });
-
-      // Close approve modal when clicking outside
-      approveModal.addEventListener('click', (e) => {
-        if (e.target === approveModal) {
-          approveModal.classList.remove('active');
-        }
-      });
-
-      // Close approve modal with cancel button
-      document.querySelector('#approve-modal .modal-btn-cancel').addEventListener('click', () => {
-        approveModal.classList.remove('active');
-      });
-
-      // Close flash messages
-      document.querySelectorAll(".close-flash").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const parent = e.target.closest('div[role="presentation"], .flex');
-          if (parent) parent.remove();
-        });
-      });
-
-      // Auto-scroll to the newest answer
-      (function () {
-        const latest = document.querySelector(".highlight");
-        if (latest) {
-          setTimeout(() => {
-            latest.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 150);
-        }
-      })();
-
-      // Vote for the question - FIXED VOTING LOGIC
-      async function voteQuestion(questionId, direction) {
-        if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
-          alert("Please login to vote");
-          return;
-        }
-
-        try {
-          const endpoint = direction === 'up'
-            ? `/upvote/${questionId}`
-            : `/downvote/${questionId}`;
-
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              // Save state to localStorage
+              localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
             }
-          });
 
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
+            // Toggle mobile sidebar
+            function toggleMobileSidebar() {
+              sidebar.classList.toggle('mobile-open');
+              overlay.classList.toggle('active');
 
-          const data = await response.json();
-          console.log("Vote response:", data);
-
-          // Update the vote count display
-          const voteCountElement = document.getElementById('vote-count-question');
-          if (voteCountElement) {
-            voteCountElement.textContent = data.net_count;
-          }
-
-          // Get buttons
-          const upButton = document.getElementById('upvote-question');
-          const downButton = document.getElementById('downvote-question');
-
-          // Reset both buttons first
-          upButton.classList.remove('has-upvoted', 'has-downvoted');
-          downButton.classList.remove('has-upvoted', 'has-downvoted');
-
-          // Set new states
-          if (data.has_upvoted) {
-            upButton.classList.add('has-upvoted');
-          } else if (data.has_downvoted) {
-            downButton.classList.add('has-downvoted');
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          alert('Error processing your vote. Please try again.');
-        }
-      }
-
-      // Vote for an answer - FIXED VOTING LOGIC
-      async function voteAnswer(questionId, answerId, direction) {
-        if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
-          alert("Please login to vote");
-          return;
-        }
-
-        try {
-          const endpoint = direction === 'up'
-            ? `/upvote/${questionId}/${answerId}`
-            : `/downvote/${questionId}/${answerId}`;
-
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+              } else {
+                document.body.style.overflow = 'auto';
+              }
             }
-          });
 
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
+            // Initialize sidebar state
+            function initSidebar() {
+              const savedState = localStorage.getItem('sidebarCollapsed');
 
-          const data = await response.json();
-          console.log("Vote response:", data);
+              // Check if we're on mobile
+              if (window.innerWidth <= 1024) {
+                isSidebarCollapsed = true;
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+              } else {
+                isSidebarCollapsed = savedState === 'true';
 
-          // Update the vote count display
-          const voteCountElement = document.getElementById(`vote-count-${answerId}`);
-          if (voteCountElement) {
-            voteCountElement.textContent = data.net_count;
-          }
+                if (isSidebarCollapsed) {
+                  sidebar.classList.add('collapsed');
+                  mainContent.classList.add('expanded');
+                  sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                } else {
+                  sidebar.classList.remove('collapsed');
+                  mainContent.classList.remove('expanded');
+                  sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                }
+              }
+            }
 
-          // Get buttons
-          const upButton = document.getElementById(`upvote-${answerId}`);
-          const downButton = document.getElementById(`downvote-${answerId}`);
+            // Event listeners
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            mobileMenuButton.addEventListener('click', toggleMobileSidebar);
+            overlay.addEventListener('click', toggleMobileSidebar);
 
-          // Reset both buttons first
-          upButton.classList.remove('has-upvoted', 'has-downvoted');
-          downButton.classList.remove('has-upvoted', 'has-downvoted');
+            // Initialize on load and resize
+            window.addEventListener('load', initSidebar);
+            window.addEventListener('resize', initSidebar);
 
-          // Set new states
-          if (data.has_upvoted) {
-            upButton.classList.add('has-upvoted');
-          } else if (data.has_downvoted) {
-            downButton.classList.add('has-downvoted');
-          }
+            // Delete Modal Functionality
+            const deleteModal = document.getElementById('delete-modal');
+            const deleteForm = document.getElementById('delete-form');
+            let currentDeleteType = '';
+            let currentDeleteId = '';
 
-          // Update the data-votes attribute for sorting
-          document.getElementById(`answer-${answerId}`).dataset.votes = data.net_count;
-        } catch (error) {
-          console.error('Error:', error);
-          alert('Error processing your vote. Please try again.');
-        }
-      }
+            // Set up all delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                currentDeleteType = btn.dataset.type;
+                currentDeleteId = btn.dataset.id;
 
-      // Sort answers
-      document.getElementById("sort-answers").addEventListener("change", function() {
-        const sortBy = this.value;
-        const answersContainer = document.getElementById("answers-list");
-        const answers = Array.from(answersContainer.children);
+                // Update the form action to point to the correct delete route
+                deleteForm.action = `/delete/${currentDeleteType}/${currentDeleteId}`;
 
-        answers.sort((a, b) => {
-          if (sortBy === "newest") {
-            return new Date(b.dataset.time) - new Date(a.dataset.time);
-          } else if (sortBy === "oldest") {
-            return new Date(a.dataset.time) - new Date(b.dataset.time);
-          } else if (sortBy === "votes") {
-            return parseInt(b.dataset.votes) - parseInt(a.dataset.votes);
-          }
-          return 0;
-        });
+                // Show the modal
+                deleteModal.classList.add('active');
+              });
+            });
 
-        // Clear and re-append sorted answers
-        answersContainer.innerHTML = "";
-        answers.forEach(answer => answersContainer.appendChild(answer));
-      });
+            // Close delete modal when clicking the close button
+            document.getElementById('close-delete-modal').addEventListener('click', () => {
+              deleteModal.classList.remove('active');
+            });
 
-      // Time ago calculation
+            // Close delete modal when clicking outside
+            deleteModal.addEventListener('click', (e) => {
+              if (e.target === deleteModal) {
+                deleteModal.classList.remove('active');
+              }
+            });
+
+            // Close delete modal with cancel button
+            document.querySelector('#delete-modal .modal-btn-cancel').addEventListener('click', () => {
+              deleteModal.classList.remove('active');
+            });
+
+            // Approve Modal Functionality
+            const approveModal = document.getElementById('approve-modal');
+            const approveForm = document.getElementById('approve-form');
+            const approveModalText = document.getElementById('approve-modal-text');
+            let currentApproveAnswerId = '';
+            let currentIsApproved = false;
+
+            // Function to show approve modal
+            function showApproveModal(button) {
+              currentApproveAnswerId = button.dataset.answerId;
+              currentIsApproved = button.dataset.isApproved === 'true';
+
+              // Update the form action
+              approveForm.action = `/approve_answer/${currentApproveAnswerId}`;
+
+              // Update the modal text based on current state
+              if (currentIsApproved) {
+                approveModalText.textContent = 'Are you sure you want to remove approval from this answer?';
+              } else {
+                approveModalText.textContent = 'Are you sure you want to approve this answer?';
+              }
+
+              // Show the modal
+              approveModal.classList.add('active');
+            }
+
+            // Close approve modal when clicking the close button
+            document.getElementById('close-approve-modal').addEventListener('click', () => {
+              approveModal.classList.remove('active');
+            });
+
+            // Close approve modal when clicking outside
+            approveModal.addEventListener('click', (e) => {
+              if (e.target === approveModal) {
+                approveModal.classList.remove('active');
+              }
+            });
+
+            // Close approve modal with cancel button
+            document.querySelector('#approve-modal .modal-btn-cancel').addEventListener('click', () => {
+              approveModal.classList.remove('active');
+            });
+
+            // Close flash messages
+            document.querySelectorAll(".close-flash").forEach((btn) => {
+              btn.addEventListener("click", (e) => {
+                const parent = e.target.closest('div[role="presentation"], .flex');
+                if (parent) parent.remove();
+              });
+            });
+
+            // Auto-scroll to the newest answer
+            (function () {
+              const latest = document.querySelector(".highlight");
+              if (latest) {
+                setTimeout(() => {
+                  latest.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 150);
+              }
+            })();
+
+            // Vote for the question - FIXED VOTING LOGIC
+            async function voteQuestion(questionId, direction) {
+              if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+                alert("Please login to vote");
+                return;
+              }
+
+              try {
+                const endpoint = direction === 'up'
+                  ? `/upvote/${questionId}`
+                  : `/downvote/${questionId}`;
+
+                const response = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  }
+                });
+
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log("Vote response:", data);
+
+                // Update the vote count display
+                const voteCountElement = document.getElementById('vote-count-question');
+                if (voteCountElement) {
+                  voteCountElement.textContent = data.net_count;
+                }
+
+                // Get buttons
+                const upButton = document.getElementById('upvote-question');
+                const downButton = document.getElementById('downvote-question');
+
+                // Reset both buttons first
+                upButton.classList.remove('has-upvoted', 'has-downvoted');
+                downButton.classList.remove('has-upvoted', 'has-downvoted');
+
+                // Set new states
+                if (data.has_upvoted) {
+                  upButton.classList.add('has-upvoted');
+                } else if (data.has_downvoted) {
+                  downButton.classList.add('has-downvoted');
+                }
+              } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing your vote. Please try again.');
+              }
+            }
+
+            // Vote for an answer - FIXED VOTING LOGIC
+            async function voteAnswer(questionId, answerId, direction) {
+              if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+                alert("Please login to vote");
+                return;
+              }
+
+              try {
+                const endpoint = direction === 'up'
+                  ? `/upvote/${questionId}/${answerId}`
+                  : `/downvote/${questionId}/${answerId}`;
+
+                const response = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  }
+                });
+
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log("Vote response:", data);
+
+                // Update the vote count display
+                const voteCountElement = document.getElementById(`vote-count-${answerId}`);
+                if (voteCountElement) {
+                  voteCountElement.textContent = data.net_count;
+                }
+
+                // Get buttons
+                const upButton = document.getElementById(`upvote-${answerId}`);
+                const downButton = document.getElementById(`downvote-${answerId}`);
+
+                // Reset both buttons first
+                upButton.classList.remove('has-upvoted', 'has-downvoted');
+                downButton.classList.remove('has-upvoted', 'has-downvoted');
+
+                // Set new states
+                if (data.has_upvoted) {
+                  upButton.classList.add('has-upvoted');
+                } else if (data.has_downvoted) {
+                  downButton.classList.add('has-downvoted');
+                }
+
+                // Update the data-votes attribute for sorting
+                document.getElementById(`answer-${answerId}`).dataset.votes = data.net_count;
+              } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing your vote. Please try again.');
+              }
+            }
+
+            // Sort answers
+            document.getElementById("sort-answers").addEventListener("change", function() {
+              const sortBy = this.value;
+              const answersContainer = document.getElementById("answers-list");
+              const answers = Array.from(answersContainer.children);
+
+              answers.sort((a, b) => {
+                if (sortBy === "newest") {
+                  return new Date(b.dataset.time) - new Date(a.dataset.time);
+                } else if (sortBy === "oldest") {
+                  return new Date(a.dataset.time) - new Date(b.dataset.time);
+                } else if (sortBy === "votes") {
+                  return parseInt(b.dataset.votes) - parseInt(a.dataset.votes);
+                }
+                return 0;
+              });
+
+              // Clear and re-append sorted answers
+              answersContainer.innerHTML = "";
+              answers.forEach(answer => answersContainer.appendChild(answer));
+            });
+
+            // Time ago calculation
       function updateTimeAgo() {
         document.querySelectorAll('.time-ago').forEach(element => {
           const timeString = element.dataset.time;
@@ -1558,7 +1558,10 @@
             text = `${months} month${months !== 1 ? 's' : ''} ago`;
           }
 
-          element.textContent = text;
+          // Only update if the text is different to avoid unnecessary DOM updates
+          if (element.textContent !== text) {
+            element.textContent = text;
+          }
         });
       }
 
