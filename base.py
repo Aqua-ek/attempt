@@ -99,7 +99,7 @@ def serialize_questions(q):
     }
 
 
-def serialize_answers(a, net_count, has_upvoted, has_downvoted):
+def serialize_answers(a):
     return {
         "answid": a.answid,
         "anstime": a.anstime.strftime("%b,%d,%Y"),
@@ -111,10 +111,6 @@ def serialize_answers(a, net_count, has_upvoted, has_downvoted):
         "deletedwhen": a.deletedwhen.strftime("%b,%d,%Y") if a.deletedwhen else "",
         "displayed_answer": a.displayed_answer,
         "sender_name": a.sender.name,
-        "net_count": net_count,
-        "has_upvoted": has_upvoted,
-        "has_downvoted": has_downvoted,
-
         "group_name": a.group.name
 
     }
@@ -135,6 +131,23 @@ def get_question_vote_totals(group_id):
     return {v.questid: v.net_count for v in vote_totals}
 
 
+def get_answer_vote_totals(question_id):
+    """Get vote totals for all answers to a specific question as a HashMap"""
+    answer_vote_totals = (
+        db.session.query(
+            Answers.answid,  # Answer ID
+            func.coalesce(func.sum(Ansvotes.value), 0).label("net_count")
+        )
+        # Outer join to include answers with no votes
+        .outerjoin(Ansvotes, Ansvotes.answid == Answers.answid)
+        # Filter for answers to this specific question
+        .filter(Answers.qstid == question_id)
+        .group_by(Answers.answid)  # Group by answer ID
+        .all()
+    )
+    return {v.answid: v.net_count for v in answer_vote_totals}
+
+
 def get_user_vote_status(user_id, question_ids):
     """Get user's vote status for multiple questions as a HashMap"""
     if not question_ids:
@@ -149,6 +162,24 @@ def get_user_vote_status(user_id, question_ids):
         .all()
     )
     return {uv.questid: uv.value for uv in user_votes}
+
+
+def get_answer_user_vote_status(user_id, answer_ids):
+    """Get user's vote status for multiple answers as a HashMap"""
+    if not answer_ids:
+        return {}
+
+    user_votes = (
+        db.session.query(Ansvotes.answid, Ansvotes.value)
+        .filter(
+            Ansvotes.answid.in_(answer_ids),
+            Ansvotes.userid == user_id
+        )
+        .all()
+    )
+    print(user_votes)
+    print('aloha')
+    return {uv.answid: uv.value for uv in user_votes}
 
 
 @app.route("/user")
@@ -571,96 +602,90 @@ def question_answers(qstid):
         )
         db.session.add(new_answer)
         db.session.commit()
+        r.delete(f"cache_keys_for_answer{question.qstid}")
         return redirect(url_for("question_answers", qstid=qstid))
     answer_cache_keys = f"cache_keys_for_answer{question.qstid}"
     answer_cache = r.get(answer_cache_keys)
 
+    # answers_to_question_cache
+
     if answer_cache:
-        question_vote_count = (
-            db.session.query(func.sum(Votes.value)).filter_by(
-                questid=qstid).scalar() or 0
-        )
-
-        answers = (
-            Answers.query.filter_by(qstid=question.qstid)
-            .order_by(Answers.anstime.desc())
-            .all()
-        )
-
-        question_has_upvoted = False
-        question_has_downvoted = False
-        if current_user.is_authenticated:
-            user_vote = Votes.query.filter_by(
-                questid=qstid, userid=current_user.id).first()
-            if user_vote:
-                question_has_upvoted = user_vote.value == 1
-                question_has_downvoted = user_vote.value == -1
         answer_hold = json.loads(answer_cache)
         print("seen from cache")
+        print("answer_loaded_from_cache")
     else:
-
-        question_vote_count = (
-            db.session.query(func.sum(Votes.value)).filter_by(
-                questid=qstid).scalar() or 0
-        )
-
-        question_has_upvoted = False
-        question_has_downvoted = False
-        if current_user.is_authenticated:
-            user_vote = Votes.query.filter_by(
-                questid=qstid, userid=current_user.id).first()
-            if user_vote:
-                question_has_upvoted = user_vote.value == 1
-                question_has_downvoted = user_vote.value == -1
 
         answers = (
             Answers.query.filter_by(qstid=question.qstid)
             .order_by(Answers.anstime.desc())
             .all()
         )
-        answer_hold_dic = []
-        answ_count = (
-            db.session.query(
-                Answers, func.coalesce(
-                    func.sum(Ansvotes.value), 0).label("net_count")
-            )
-            .outerjoin(Ansvotes, Ansvotes.answid == Answers.answid)
-            .filter(Answers.qstid == question.qstid)
-            .group_by(Answers.answid)
-            .order_by(Answers.anstime.desc())  # Optional: newest first
-            .all()
-        )
-        if not answ_count:
+        answer_hold = [serialize_answers(a) for a in answers]
+        r.setex(answer_cache_keys, 300, json.dumps(answer_hold))
+        print("answer_not_from_cache")
+        if not answers:
             answer_hold = []
-        for answer, net_count in answ_count:
-            user_vote = None
-            if current_user.is_authenticated:
-                vote = Ansvotes.query.filter_by(
-                    answid=answer.answid, userid=current_user.id
-                ).first()
-                user_vote = vote.value if vote else None
-            answer_hold_dic.append(
-                {
-                    "answer": answer,
-                    "net_count": net_count,
-                    "has_upvoted": user_vote == 1,
-                    "has_downvoted": user_vote == -1,
-                }
-            )
-            answer_hold = [serialize_answers(
-                a["answer"], a["net_count"], a["has_upvoted"], a["has_downvoted"]) for a in answer_hold_dic]
-            r.setex(answer_cache_keys, 300, json.dumps(answer_hold))
-        print('not from cache')
+            answers_net_vote = []
+    answer_net_count_cache_key = f"answer_net{question.qstid}"
+    answer_net_cache = r.get(answer_net_count_cache_key)
+
+    # answer_net_Vote_cache
+
+    if answer_net_cache:
+        answers_net_vote = json.loads(answer_net_cache)
+        answers_net_vote = {int(k): v for k, v in answers_net_vote.items()}
+        print(answers_net_vote)
+        print("ans_count from cache")
+    else:
+        answers_net_vote = get_answer_vote_totals(question.qstid)
+        r.setex(answer_net_count_cache_key, 30,
+                json.dumps(answers_net_vote))
+        print("ans_count not from cache")
+
+    # answer_user_vote_Status
+
+    user_vote_status_for_answer = {}
+    if current_user.is_authenticated:
+        answer_ids = [a["answid"] for a in answer_hold]
+        user_vote_status_for_answer = get_answer_user_vote_status(
+            current_user.id, answer_ids=answer_ids)
+
+    # question_net_vote_cache
+
+    question_net_vote_cache_keys = f"cache_question_net_for_answer{question.qstid}"
+    question_net_vote_cache = r.get(question_net_vote_cache_keys)
+    if question_net_vote_cache:
+        question_net_vote = json.loads(question_net_vote_cache)
+
+        print(f"{question_net_vote} mapaaaaa")
+        question_net_vote = {int(k): v for k, v in question_net_vote.items()}
+        print("question net vote from cache")
+    else:
+        question_net_vote = get_question_vote_totals(
+            question.group.group_id)
+        print(f"{question_net_vote} apa")
+
+        r.setex(question_net_vote_cache_keys, 30,
+                json.dumps(question_net_vote))
+        print("question net vote not from cache")
+
+    # question_vote_status_for_user
+
+    question_vote_status_for_answer = {}
+    if current_user.is_authenticated:
+        question_ids = [question.qstid]
+        question_vote_status_for_answer = get_user_vote_status(
+            current_user.id, question_ids=question_ids)
 
     return render_template(
         "add_answer.html",
-        question=question,
-        question_vote_count=question_vote_count,
-        question_has_upvoted=question_has_upvoted,
-        question_has_downvoted=question_has_downvoted,
-        answers=answers,
-        form=form,
         answer_hold=answer_hold,
+        answers_net_vote=answers_net_vote,
+        question_net_vote=question_net_vote,
+        question_vote_status_for_answer=question_vote_status_for_answer,
+        user_vote_status_for_answer=user_vote_status_for_answer,
+        question=question,
+        form=form,
     )
 
 
@@ -801,6 +826,7 @@ def upvoteanswer(questid, ansid):
         update_streak(qst.sender.id)
         qst.sender.points += 2
         db.session.commit()
+    r.delete(f"answer_net{qst.qstid}")
 
     return jsonify(
         {
@@ -846,6 +872,7 @@ def downvoteanswer(questid, ansid):
                          ).filter_by(answid=ansid).scalar()
         or 0
     )
+    r.delete(f"answer_net{qst.qstid}")
 
     return jsonify(
         {
@@ -883,8 +910,10 @@ def delete(type, id):
     qtid = None
     if type == 'qst':
         prev = db.session.query(Questions).get(id)
+        r.delete(f"group_question{prev.name}")
         prev.isdeleted = True
         prev.deletedwhen = datetime.now(timezone.utc)
+
         qtid = prev.qstid
     elif type == 'ans':
         prev = db.session.query(Answers).get(id)
@@ -895,7 +924,10 @@ def delete(type, id):
     else:
         flash("Page Does Not Exist")
         return redirect(url_for('home'))
+
     db.session.commit()
+
+    (f"cache_keys_for_answer{qtid}")
     return redirect(url_for('question_answers', qstid=qtid))
 
 
@@ -931,10 +963,12 @@ def approve_answer(answid):
         if answer.isapproved:
             answer.isapproved = False
             answer.sender.points -= 3
+
         else:
             answer.isapproved = True
             answer.sender.points += 3
             update_streak(answer.sender.id)
+        r.delete(f"cache_keys_for_answer{answer.qstid}")
         db.session.commit()
     return redirect(url_for('question_answers', qstid=answer.qstid))
 
