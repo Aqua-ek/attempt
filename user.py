@@ -37,6 +37,8 @@ class Groups(db.Model):
         db.DateTime, default=lambda: datetime.now(timezone.utc))
     groupdesc = db.Column(db.String(75), nullable=False)
     isapproved = db.Column(db.Boolean, default=False)
+    isprivate = db.Column(db.Boolean, default=False, nullable=True)
+    private_key = db.Column(db.String(255), nullable=True)
 
 
 class Messages(db.Model):

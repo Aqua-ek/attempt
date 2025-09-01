@@ -19,7 +19,6 @@ app = Flask(__name__)
 migrate = Migrate(app, db)
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
-
 app.secret_key = "12345"
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "postgresql://postgres:mypasscode@localhost/User"
@@ -27,7 +26,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["CACHE_TYPE"] = "RedisCache"
 app.config["CACHE_REDIS_URL"] = "redis://localhost:6379/0"
-
 
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -39,11 +37,6 @@ socketio.init_app(app)
 @app.route("/")
 def home():
     return render_template("home.html")
-
-
-@app.route("/dashboard")
-def dashboard():
-    return render_template("dashboard.html")
 
 
 def update_streak(id):
@@ -167,7 +160,6 @@ def login():
         if check_password_hash(verify.password, password):
 
             login_user(verify, remember=True)
-            session["email"] = current_user.email
             session["username"] = current_user.name
 
             return redirect(url_for("user"))
@@ -194,7 +186,6 @@ def signup():
         new_user = Users(name=name, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        session["email"] = email
         session["username"] = name
 
         flash("Account Created", "success")
@@ -220,8 +211,6 @@ def create():
         if request.method == "POST" and form.validate_on_submit():
             grpname = form.groupname.data
             grpdesc = form.groupdesc.data
-            session["grpname"] = grpname
-            session["grpdesc"] = grpdesc
             if Groups.query.filter_by(name=grpname).first():
                 flash("Group Exists")
                 return render_template("create_group.html", form=form)
@@ -251,7 +240,8 @@ def show_groups():
         if cached:
             groups = json.loads(cached)
         else:
-            groups = Groups.query.filter_by(isapproved=True).all()
+            groups = Groups.query.filter_by(
+                isapproved=True, isprivate=False or None).all()
             m_group = current_user.groups
             group = set(groups).difference(set(m_group))
             user_group = list(group)
