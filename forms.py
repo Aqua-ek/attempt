@@ -41,6 +41,15 @@ class CreateGroup(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class CreatePrivateGroup(FlaskForm):
+    privategroupname = StringField('Group Name', validators=[
+                                   DataRequired(), Length(min=8, max=75)])
+    privategroupdesc = StringField("Group Description", validators=[DataRequired(), Length(
+        min=8, max=75, message='Group Descriptions Must be between 8 and 75 characters ')])
+    groupkey = StringField("Group Key", validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 class SuggestGroup(FlaskForm):
     groupname = StringField(validators=[DataRequired(), Length(min=2, max=75)])
     groupdesc = StringField(validators=[DataRequired(), Length(

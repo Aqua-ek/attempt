@@ -3,7 +3,7 @@ from sqlalchemy import func, or_
 from ext import db
 from flask_migrate import Migrate
 from flask import Flask, render_template, request, session, redirect, url_for, flash
-from forms import LoginForm, SignupForm, CreateGroup, SuggestGroup, Question, Answer
+from forms import LoginForm, SignupForm, CreateGroup, SuggestGroup, Question, Answer, CreatePrivateGroup
 from user import db, Users, Groups, Messages, Questions, Answers, Tags, Votes, Ansvotes
 from datetime import datetime, timedelta, timezone
 from flask import jsonify
@@ -13,6 +13,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from serializers import serialize_answers, serialize_groups, serialize_questions
 import redis
 import json
+import secrets
 
 app = Flask(__name__)
 # csrf.init_app(app)
@@ -105,6 +106,13 @@ def get_user_vote_status(user_id, question_ids):
         .all()
     )
     return {uv.questid: uv.value for uv in user_votes}
+
+
+def generate_secret_private_key(token_length):
+    passcode_token = secrets.token_hex(token_length)
+    if db.session.query(Groups).filter_by(private_key=passcode_token).first():
+        passcode_token = secrets.token_hex(token_length)
+    return passcode_token
 
 
 def get_answer_user_vote_status(user_id, answer_ids):
@@ -228,6 +236,26 @@ def create():
     return render_template("create_group.html", form=form, type=type)
 
 
+@app.route('/create_private_group', methods=["POST", "GET"])
+def create_private_group():
+    form = CreatePrivateGroup()
+    token_default = generate_secret_private_key(8)
+    print(token_default)
+    if current_user.is_authenticated:
+        if request.method == "GET":
+            form.groupkey.data = token_default
+        if form.validate_on_submit():
+            group_name = form.privategroupname.data
+            groupdesc = form.privategroupdesc.data
+            new_private_group = Groups(
+                name=group_name, groupdesc=groupdesc, isprivate=True, private_key=token_default)
+            db.session.add(new_private_group)
+            db.session.commit()
+            flash("Group Successfully added to admin's request")
+            return redirect(url_for('show_groups'))
+        return render_template('create_private_group.html', form=form)
+
+
 @app.route("/groups")
 def show_groups():
     all_group_cache = "all_groups"
@@ -276,6 +304,8 @@ def join(group_id):
         flash("Successfully Joined", "success")
         current_user.groups.append(group)
         db.session.commit()
+    if group not in user.groups and group.is_private == True:
+        return redirect(url_for('home'))
     else:
         flash("Already a member", "error")
     return redirect(url_for("show_groups"))
