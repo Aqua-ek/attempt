@@ -513,7 +513,6 @@ def group_questions(group_id):
         group_questions = [serialize_questions(q) for q in questions]
         r.setex(question_cache_key, 300, json.dumps(group_questions))
         if not group_questions:
-            questions_with_votes = []
             net_vote_count = []
     net_count_cache_key = f"group_net_votes{questedgroup.name}"
     net_cache = r.get(net_count_cache_key)

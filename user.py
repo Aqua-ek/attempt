@@ -156,6 +156,20 @@ class Ansvotes(db.Model):
     )
 
 
+class Groupmedia(db.Model):
+    fileid = db.Column("media_id", db.Integer, primary_key=True)
+    file_defname = db.Column(
+        "file_default_name", db.String(255), nullable=False)
+    file_storedname = db.Column(
+        "stored_file_bucket_name", db.String(255), nullable=False)
+    group_id = db.Column('group_id', db.ForeignKey("groups.group_id"))
+    user_id = db.Column(db.ForeignKey("users.id"))
+    upload_time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    group = db.relationship("Groups", backref="files")
+    user = db.relationship("Users", backref="files")
+
+
 @login_manager.user_loader
 def load_user(users_id):
     return Users.query.get(int(users_id))
